@@ -282,3 +282,13 @@ td.num,th.num{text-align:right}
 .mpop-a{margin-top:8px}
 .mpop-a .btn{margin-top:2px}
 .mpin.lib{border-color:#1f9d55;box-shadow:0 0 0 3px rgba(31,157,85,.25),0 6px 16px rgba(15,42,68,.18)}
+
+.mapa-leg{max-width:calc(100% - 70px)}
+.mint span{flex:1;min-width:0} .mint a{font-weight:600;color:var(--navy)}
+.ofa-tit{font-size:18px;font-weight:700;color:var(--navy);margin:4px 0}
+.ofa-val{font-size:26px;font-weight:800;color:var(--accent);margin-bottom:10px}
+.ofa-dl{display:grid;grid-template-columns:110px 1fr;gap:6px 10px;margin:8px 0;font-size:14px}
+.ofa-dl dt{color:var(--muted)} .ofa-dl dd{margin:0;color:var(--navy);font-weight:500}
+.ofa-obs{background:#f6f8fb;border-radius:10px;padding:10px 12px;font-size:14px;margin-top:10px}
+.ofa-fit{margin-top:10px;border-radius:10px;padding:10px 12px;font-weight:600;font-size:14px}
+.ofa-fit.ok{background:var(--ok-soft);color:var(--ok)} .ofa-fit.bad{background:var(--bad-soft);color:var(--bad)}

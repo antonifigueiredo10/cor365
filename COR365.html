@@ -293,6 +293,16 @@ td.num,th.num{text-align:right}
 .mpop-a .btn{margin-top:2px}
 .mpin.lib{border-color:#1f9d55;box-shadow:0 0 0 3px rgba(31,157,85,.25),0 6px 16px rgba(15,42,68,.18)}
 
+.mapa-leg{max-width:calc(100% - 70px)}
+.mint span{flex:1;min-width:0} .mint a{font-weight:600;color:var(--navy)}
+.ofa-tit{font-size:18px;font-weight:700;color:var(--navy);margin:4px 0}
+.ofa-val{font-size:26px;font-weight:800;color:var(--accent);margin-bottom:10px}
+.ofa-dl{display:grid;grid-template-columns:110px 1fr;gap:6px 10px;margin:8px 0;font-size:14px}
+.ofa-dl dt{color:var(--muted)} .ofa-dl dd{margin:0;color:var(--navy);font-weight:500}
+.ofa-obs{background:#f6f8fb;border-radius:10px;padding:10px 12px;font-size:14px;margin-top:10px}
+.ofa-fit{margin-top:10px;border-radius:10px;padding:10px 12px;font-weight:600;font-size:14px}
+.ofa-fit.ok{background:var(--ok-soft);color:var(--ok)} .ofa-fit.bad{background:var(--bad-soft);color:var(--bad)}
+
 </style>
 </head>
 <body>
@@ -650,7 +660,7 @@ function telaApp(view, arg) {
     if (k === 'atendimento') return DB.conversas.reduce((s, c) => s + c.naoLidas, 0);
     return 0;
   };
-  const ativo = { processo: SESS.perfil === 'banco' ? 'esteira' : SESS.perfil === 'imob' ? 'clientes' : 'repasse', espelho: 'empreendimentos' }[view] || view;
+  const ativo = { processo: SESS.perfil === 'banco' ? 'esteira' : SESS.perfil === 'imob' ? 'clientes' : 'repasse', espelho: 'empreendimentos', oferta: 'mapa' }[view] || view;
   app.innerHTML = `<div class="app">
     <aside class="side" id="side"><div class="brand">${logo(30, true)}<div class="who">${pf.nome}</div></div>
       <nav>${pf.menu.map(([k, n, i]) => { const b = badge(k); return `<a href="#/app/${k}" class="${k === ativo ? 'on' : ''}">${ic(i)}${n}${b ? `<span class="badge">${b}</span>` : ''}</a>`; }).join('')}</nav>
@@ -748,6 +758,10 @@ let CONV_SEL = null;
 /* ---------- tela do mapa: completa (correspondente) ou anônima (corretor) ----------
    No modo corretor nunca vão para o HTML: nome, CPF, telefone, banco nem o link do processo,
    a não ser que o administrador tenha liberado o cliente para aquele corretor (ou que o cliente já seja dele). */
+/* carteira do corretor: imóveis dele + os da imobiliária sem dono; vendido não entra */
+const carteiraDe = nome => DB.imoveis.filter(m => m.status !== 'Vendido' && (!m.corretor || m.corretor === nome));
+const linkOferta = (p, i) => '#/app/oferta/' + p.id + '.' + i;
+const resumoImovel = m => `${h(m.titulo)} · ${h(m.bairro || '')}${m.cidade ? ', ' + h(m.cidade) : ''} · ${brl(m.valor)}`;
 const liberadoPara = (p, nome) => !!nome && (p.liberadoPara === nome || p.corretor === nome);
 function corretoresConhecidos() {
   const n = new Set();
@@ -784,9 +798,9 @@ function telaMapa(anonimo) {
       const quem = x => {
         const p = x.p;
         if (!anonimo) {
-          const ints = (p.interesses || []).map(i => i.corretor);
+          const ofs = p.interesses || [];
           return `<div class="mquem"><b>${h(p.cliente)}</b> · ${h(p.telefone || 'sem telefone')} · ${h(p.banco)}</div>
-            ${ints.length ? `<div class="mint">${ic('users')} Pediram este cliente: ${ints.map(h).join(', ')}</div>` : ''}
+            ${ofs.map((o, i) => `<div class="mint">${ic('home')}<span><b>${h(o.corretor)}</b> ${o.imovel ? `ofereceu <a href="${linkOferta(p, i)}">${resumoImovel(o.imovel)}</a>` : 'pediu este cliente'}</span></div>`).join('')}
             ${p.liberadoPara ? `<div class="mlib">Liberado para <b>${h(p.liberadoPara)}</b>${SESS.admin ? ` <a href="#" data-lib="${p.id}">trocar</a> · <a href="#" data-tirar="${p.id}">tirar</a>` : ''}</div>`
               : SESS.admin ? `<button class="btn sm" data-lib="${p.id}">${ic('key')} Liberar para corretor</button>` : ''}`;
         }
@@ -796,7 +810,8 @@ function telaMapa(anonimo) {
             <div class="mquem"><b>${h(p.cliente)}</b> · ${h(p.telefone || 'sem telefone')}</div>
             ${tel ? `<a class="btn ghost sm" target="_blank" rel="noopener" href="https://wa.me/55${tel}">${ic('chat')} WhatsApp</a>` : ''}`;
         }
-        return pediu(p) ? `<div class="mint">Pedido enviado. Aguardando o administrador liberar.</div>`
+        const minha = (p.interesses || []).find(i => i.corretor === eu);
+        return minha ? `<div class="mint"><span>${minha.imovel ? `Você ofereceu <b>${resumoImovel(minha.imovel)}</b>. ` : ''}Aguardando o administrador liberar.</span></div>`
           : `<button class="btn ghost sm" data-int="${p.id}">${ic('home')} Tenho imóvel para este cliente</button>`;
       };
       const pop = x => `<div class="mpop">${anonimo ? `<b>${h(x.bairro)} · ${h(x.cidade)}</b>` : `<b>${h(x.p.cliente)}</b><div>${h(x.bairro)} · ${h(x.cidade)}</div>`}
@@ -854,9 +869,22 @@ function telaMapa(anonimo) {
           map.flyTo(m.getLatLng(), 16, { duration: .6 });
         } else if (t.dataset.int) {
           const p = proc(+t.dataset.int); if (!p || pediu(p)) return;
-          (p.interesses = p.interesses || []).push({ corretor: eu, data: hoje() });
-          p.historico.push({ data: hoje(), txt: 'Corretor pediu o cliente pelo mapa: ' + eu, por: eu });
-          depois('Pedido enviado ao administrador');
+          const x = ps.find(y => y.p.id === p.id), base = carteiraDe(eu);
+          if (!base.length) return modal('Cadastre um imóvel primeiro', `<p>Para avisar o administrador, escolha um imóvel da sua carteira. Você ainda não tem imóvel disponível cadastrado.</p>`,
+            [{ t: 'Cancelar', cls: 'ghost', fn: closeModal }, { t: 'Cadastrar imóvel', fn: () => { closeModal(); go('app/imoveis'); } }]);
+          const nota = m => (m.cidade === x.cidade ? 0 : 2) + (m.valor <= p.valorImovel ? 0 : 1);
+          const ord = base.slice().sort((a, b) => nota(a) - nota(b) || Math.abs(a.valor - p.valorImovel) - Math.abs(b.valor - p.valorImovel));
+          const lab = m => `${m.titulo} · ${m.bairro || ''}, ${m.cidade || ''} · ${brl(m.valor)}${m.valor > p.valorImovel ? ' (acima do valor do cliente)' : ''}`;
+          formModal(`Qual imóvel você tem? Cliente de até ${brl(p.valorImovel)} em ${x.bairro}, ${x.cidade}`, [
+            { k: 'imovel', l: 'Imóvel da sua carteira', t: 'select', o: ord.map(m => [m.id, lab(m)]), v: ord[0].id, req: true },
+            { k: 'obs', l: 'Recado para o administrador (opcional)', t: 'textarea' }
+          ], vals => {
+            const m = DB.imoveis.find(i => i.id === +vals.imovel); if (!m) return false;
+            (p.interesses = p.interesses || []).push({ corretor: eu, data: hoje(), imovelId: m.id, obs: vals.obs || '',
+              imovel: { titulo: m.titulo, bairro: m.bairro || '', cidade: m.cidade || '', valor: +m.valor || 0, quartos: m.quartos || '', area: m.area || '', status: m.status || '' } });
+            p.historico.push({ data: hoje(), txt: 'Corretor ' + eu + ' ofereceu o imóvel ' + m.titulo + ' (' + brl(m.valor) + ') pelo mapa', por: eu });
+            depois('Imóvel enviado ao administrador');
+          });
         } else if (t.dataset.tirar && SESS.admin) {
           const p = proc(+t.dataset.tirar); p.historico.push({ data: hoje(), txt: 'Liberação retirada de ' + p.liberadoPara, por: eu }); p.liberadoPara = '';
           depois('Liberação retirada');
@@ -887,6 +915,33 @@ function telaMapa(anonimo) {
 const VIEWS = {
   /* ---------- telas comuns aos perfis ---------- */
   comum: {
+    oferta(arg) {
+      const [pid, n] = String(arg || '').split('.'), p = proc(+pid), o = p && (p.interesses || [])[+n];
+      if (!o) return { t: 'Oferta não encontrada', html: `<div class="card"><div class="empty">Essa oferta não existe mais. <a href="#/app/mapa">Voltar ao mapa</a></div></div>` };
+      const m = DB.imoveis.find(i => i.id === o.imovelId) || o.imovel || {}, loc = localDe(p), cabe = (+m.valor || 0) <= p.valorImovel;
+      const verCliente = SESS.perfil !== 'imob' || liberadoPara(p, SESS.nome);
+      const lib = p.liberadoPara === o.corretor;
+      return {
+        t: 'Imóvel oferecido por ' + o.corretor, s: 'Oferta feita pelo Mapa de oportunidades em ' + fdata(o.data),
+        a: `<a class="btn ghost" href="#/app/mapa">${ic('back')} Voltar ao mapa</a>${SESS.admin && !lib ? ` <button class="btn accent" id="libo">${ic('key')} Liberar cliente para ${h(o.corretor)}</button>` : ''}`,
+        html: `<div class="grid g2">
+          <div class="card"><div class="head"><h3>${ic('home')} Imóvel</h3>${m.status ? `<span class="tag ${m.status === 'Disponível' ? 'ok' : m.status === 'Vendido' ? 'bad' : 'warn'} r">${h(m.status)}</span>` : ''}</div>
+            <div class="ofa-tit">${h(m.titulo || 'Imóvel removido da carteira')}</div>
+            <div class="ofa-val">${brl(+m.valor || 0)}</div>
+            <dl class="ofa-dl"><dt>Local</dt><dd>${h(m.bairro || '-')}, ${h(m.cidade || '-')}</dd><dt>Quartos</dt><dd>${h(String(m.quartos || '-'))}</dd><dt>Área</dt><dd>${m.area ? h(String(m.area)) + ' m²' : '-'}</dd><dt>Corretor</dt><dd>${h(o.corretor)}</dd></dl>
+            ${o.obs ? `<div class="ofa-obs"><b>Recado do corretor</b><br>${h(o.obs)}</div>` : ''}</div>
+          <div class="card"><div class="head"><h3>${ic('users')} Cliente</h3>${tagFase(p)}</div>
+            ${verCliente ? `<div class="ofa-tit">${h(p.cliente)}</div>` : '<div class="muted">Cliente anônimo</div>'}
+            <dl class="ofa-dl"><dt>Procura em</dt><dd>${h(loc.bairro)}, ${h(loc.cidade)}</dd><dt>Imóvel até</dt><dd>${brl(p.valorImovel)}</dd><dt>Crédito</dt><dd>${brl(p.financiamento)}</dd><dt>Situação</dt><dd>${statusOp(p)}</dd></dl>
+            <div class="ofa-fit ${cabe ? 'ok' : 'bad'}">${cabe ? 'O imóvel cabe no valor do cliente' : 'O imóvel está ' + brl((+m.valor || 0) - p.valorImovel) + ' acima do valor do cliente'}</div>
+            ${lib ? `<div class="mlib" style="margin-top:10px">Cliente já liberado para ${h(o.corretor)}</div>` : ''}
+            ${SESS.perfil !== 'imob' ? `<a href="#/app/processo/${p.id}" style="display:inline-block;margin-top:10px">Abrir processo →</a>` : ''}</div></div>`,
+        after() {
+          const b = $('#libo'); if (!b) return;
+          b.onclick = () => { p.liberadoPara = o.corretor; p.historico.push({ data: hoje(), txt: 'Cliente liberado para o corretor ' + o.corretor + ' pela oferta do imóvel ' + (m.titulo || ''), por: SESS.nome }); save(); toast('Cliente liberado para ' + o.corretor); rerender(); };
+        }
+      };
+    },
     processo(id) {
       const p = proc(id); if (!p) return { t: 'Processo não encontrado', html: '<div class="empty">Processo não encontrado.</div>' };
       const pode = SESS.perfil === 'banco';
@@ -1146,7 +1201,7 @@ const VIEWS = {
         html: `<div class="grid g3">${DB.imoveis.map(m => `<div class="card imv click" data-i="${m.id}" style="cursor:pointer"><div class="ph"><span class="tag ${m.status === 'Disponível' ? 'ok' : m.status === 'Vendido' ? '' : 'warn'}">${h(m.status)}</span></div>
           <div class="bd"><b>${h(m.titulo)}</b><div class="pr">${brl(m.valor)}</div><div class="muted" style="font-size:13px">${h(m.bairro)}, ${h(m.cidade)} · ${num(m.quartos)} quartos · ${num(m.area)} m²</div></div></div>`).join('')}</div>`,
         after(v) {
-          $('#ni').onclick = () => formModal('Novo imóvel', campos(), vals => { DB.imoveis.push({ id: ++DB.seq.imovel, ...vals }); save(); rerender(); });
+          $('#ni').onclick = () => formModal('Novo imóvel', campos(), vals => { DB.imoveis.push({ id: ++DB.seq.imovel, ...vals, corretor: SESS.perfil === 'imob' ? SESS.nome : '' }); save(); rerender(); });
           $$('[data-i]', v).forEach(c => c.onclick = () => { const m = DB.imoveis.find(x => x.id === +c.dataset.i); formModal('Editar imóvel', campos(m), vals => { Object.assign(m, vals); save(); rerender(); }, [{ t: 'Excluir', cls: 'danger', fn: () => { if (confirm('Excluir este imóvel?')) { DB.imoveis = DB.imoveis.filter(x => x !== m); save(); closeModal(); rerender(); } } }]); });
         }
       };
