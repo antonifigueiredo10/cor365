@@ -273,3 +273,12 @@ td.num,th.num{text-align:right}
 
 .mpin.st-grp{width:176px;background:var(--accent);border-color:var(--accent)} .mpin.st-grp b{color:#fff} .mpin.st-grp small{white-space:nowrap;background:rgba(255,255,255,.22);text-transform:none;letter-spacing:0;font-size:11px} .mpin.st-grp:after{border-top-color:var(--accent)}
 .mpin-w{cursor:pointer}
+
+.mquem-w{margin:-2px 0 10px}
+.mquem{font-size:13px;color:var(--navy);margin-bottom:6px}
+.mint{font-size:12px;color:var(--warn);background:var(--warn-soft);border-radius:8px;padding:6px 8px;margin-bottom:6px;display:flex;gap:6px;align-items:center}
+.mlib{font-size:12px;color:var(--ok);background:var(--ok-soft);border-radius:8px;padding:6px 8px;margin-bottom:6px;font-weight:600}
+.mlib a{font-weight:600}
+.mpop-a{margin-top:8px}
+.mpop-a .btn{margin-top:2px}
+.mpin.lib{border-color:#1f9d55;box-shadow:0 0 0 3px rgba(31,157,85,.25),0 6px 16px rgba(15,42,68,.18)}
