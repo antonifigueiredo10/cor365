@@ -194,17 +194,6 @@ td.num,th.num{text-align:right}
 .modal .mb{padding:18px 20px}
 .modal .mf{display:flex;gap:8px;justify-content:flex-end;padding:14px 20px;border-top:1px solid var(--line)}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
-.lancamento-head,.lanc-row{display:grid;grid-template-columns:92px minmax(0,1fr) 145px 34px;gap:8px;align-items:center}
-.lancamento-head{color:var(--muted);font-size:11px;font-weight:600;margin-bottom:6px}
-.lanc-row{margin-bottom:8px}
-.lanc-row .inp{padding:8px 9px;font-size:13px}
-.lanc-row .remove-lanc{width:30px;height:34px;border:1px solid #f0c9c9;border-radius:8px;background:#fff;color:var(--bad);font-size:19px;line-height:1}
-.lanc-row .remove-lanc:hover{background:var(--bad-soft)}
-.lancamento-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px}
-.lancamento-actions details{flex:1;min-width:220px}
-.lancamento-actions summary{color:var(--navy2);font-size:12px;cursor:pointer}
-.lancamento-actions details[open]{margin-top:4px}
-.lancamento-actions details textarea{margin-top:8px}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;border-radius:10px;z-index:80;box-shadow:var(--sh);font-weight:500}
 
 /* formulário bancário impresso */

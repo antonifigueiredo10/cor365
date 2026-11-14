@@ -1,4 +1,4 @@
-/* COR365 · base de demonstração (fica só no navegador, chave cor365_db) */
+/* IMOV365 · base de demonstração (fica só no navegador, chave cor365_db) */
 const FASES = [
   { k: 'cadastro',     n: 'Cadastro',               sla: 2 },
   { k: 'operacional',  n: 'Análise operacional',    sla: 2 },
@@ -28,7 +28,7 @@ function seedDB() {
   };
   return {
     versao: 1,
-    config: { escritorio: 'COR365 Correspondente', cor: '#f07a28' },
+    config: { escritorio: 'IMOV365 Correspondente', cor: '#f07a28' },
     usuarios: [
       { email: 'banco@cor365.com.br', senha: '123456', nome: 'Ana Ribeiro', perfil: 'banco' },
       { email: 'corretor@cor365.com.br', senha: '123456', nome: 'Marcos Lima', perfil: 'imob' },

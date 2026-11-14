@@ -1,4 +1,4 @@
-/* COR365 · plataforma do crédito imobiliário (demonstração, sem servidor) */
+/* IMOV365 · plataforma do crédito imobiliário (demonstração, sem servidor) */
 'use strict';
 
 /* ---------- utilidades ---------- */
@@ -48,11 +48,11 @@ const ic = (n, cls = 'i') => `<svg class="${cls}" viewBox="0 0 24 24"><path d="$
 
 function logo(alt = 34, claro = false) {
   const tx = claro ? '#ffffff' : '#0f2a44', bx = claro ? 'rgba(255,255,255,.12)' : '#0f2a44';
-  return `<svg viewBox="0 0 230 56" height="${alt}" role="img" aria-label="COR365" style="display:block">
+  return `<svg viewBox="0 0 256 56" height="${alt}" role="img" aria-label="IMOV365" style="display:block">
     <rect x="2" y="4" width="48" height="48" rx="13" fill="${bx}"/>
     <path d="M12 28 L26 16 L40 28" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
     <path d="M15.5 34.5 a10.5 7 0 0 0 21 0" fill="none" stroke="#f07a28" stroke-width="5" stroke-linecap="round"/>
-    <text x="62" y="41" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="32" font-weight="800" letter-spacing="0.5" fill="${tx}">COR<tspan fill="#f07a28">365</tspan></text></svg>`;
+    <text x="62" y="41" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="32" font-weight="800" letter-spacing="0.5" fill="${tx}">IMOV<tspan fill="#f07a28">365</tspan></text></svg>`;
 }
 
 /* ---------- base e sessão ---------- */
@@ -60,6 +60,7 @@ let DB, SESS = null;
 function load() {
   try { const s = localStorage.getItem('cor365_db'); DB = s ? JSON.parse(s) : null; } catch (e) { DB = null; }
   if (!DB || DB.versao !== 1) { DB = seedDB(); save(); }
+  if (DB.config && /^COR365/.test(DB.config.escritorio || '')) { DB.config.escritorio = DB.config.escritorio.replace(/^COR365/, 'IMOV365'); save(); }
   try { SESS = JSON.parse(localStorage.getItem('cor365_sessao') || 'null'); } catch (e) { SESS = null; }
 }
 function save() { try { localStorage.setItem('cor365_db', JSON.stringify(DB)); } catch (e) { } }
@@ -165,11 +166,11 @@ function ligaWhats(el) {
     e.preventDefault();
     const n = (DB.config.whatsapp || '').replace(/\D/g, '');
     if (!n) return toast('Cadastre o número do WhatsApp em Configurações');
-    window.open('https://wa.me/' + n + '?text=' + encodeURIComponent(a.dataset.wa === 'comercial' ? 'Olá! Quero conhecer o COR365.' : 'Olá! Preciso de suporte no COR365.'), '_blank', 'noopener');
+    window.open('https://wa.me/' + n + '?text=' + encodeURIComponent(a.dataset.wa === 'comercial' ? 'Olá! Quero conhecer o IMOV365.' : 'Olá! Preciso de suporte no IMOV365.'), '_blank', 'noopener');
   });
 }
 function telaPerfis() {
-  document.title = 'Bem-vindo | COR365';
+  document.title = 'Bem-vindo | IMOV365';
   app.innerHTML = `<div class="gate dots"><div class="gate-box">
     ${logo(46)}<div class="kicker">Escolha o perfil para continuar.</div><h1>Acessar</h1>
     ${Object.entries(PERFIS).map(([k, p]) => `<button class="perfil" data-p="${k}"><span class="ico">${ic(p.ico)}</span><span><b>${p.nome}</b><small>${p.sub}</small></span><span class="chev">${ic('chev')}</span></button>`).join('')}
@@ -178,14 +179,13 @@ function telaPerfis() {
   ligaWhats(app);
 }
 function telaLogin(perfil) {
-  const pf = PERFIS[perfil]; const demo = DB.usuarios.find(u => u.perfil === perfil);
-  document.title = 'Acessar | COR365';
+  const pf = PERFIS[perfil];
+  document.title = 'Acessar | IMOV365';
   app.innerHTML = `<div class="gate dots"><div class="gate-box">
     <button class="back" id="volta">${ic('back')} Trocar perfil</button>
     ${logo(46)}<div class="kicker">${pf.nome}</div><h1>Acessar</h1>
-    <div class="demo-hint">Demonstração: <b>${h(demo.email)}</b> · senha <b>${h(demo.senha)}</b></div>
     <form id="fl" autocomplete="on">
-      <div class="field"><label>E-mail <span class="req">*</span></label><input class="inp" name="email" type="email" value="${h(demo.email)}" required></div>
+      <div class="field"><label>E-mail <span class="req">*</span></label><input class="inp" name="email" type="email" required></div>
       <div class="field"><label>Senha <span class="req">*</span></label><input class="inp" name="senha" type="password" required></div>
       <div class="erro" id="err"></div>
       <a href="#" id="esq" style="font-size:13px">Esqueci minha senha</a>
@@ -211,7 +211,7 @@ function telaApp(view, arg) {
   const fn = (VIEWS[SESS.perfil] || {})[view] || VIEWS.comum[view];
   if (!fn) return go('app/painel');
   const r = fn(arg) || {};
-  document.title = (r.t || pf.nome) + ' | COR365';
+  document.title = (r.t || pf.nome) + ' | IMOV365';
   const badge = k => {
     if (SESS.perfil !== 'banco') return 0;
     if (k === 'esteira') return DB.processos.filter(atrasado).length;
@@ -437,28 +437,25 @@ const VIEWS = {
       };
     },
     renda() {
-      const exemploLinhas = [['05/08', 'PIX RECEBIDO EMPRESA ALFA LTDA', '2.350,00'], ['10/08', 'SALARIO', '3.100,00'], ['12/08', 'PAGAMENTO BOLETO', '-450,00'], ['20/08', 'PIX RECEBIDO CLIENTE', '380,00'], ['05/09', 'PIX RECEBIDO EMPRESA ALFA LTDA', '2.350,00'], ['10/09', 'SALARIO', '3.100,00'], ['18/09', 'TRANSF MESMA TITULARIDADE', '1.000,00'], ['25/09', 'COMPRA CARTAO', '-210,90'], ['05/10', 'PIX RECEBIDO EMPRESA ALFA LTDA', '2.410,00'], ['10/10', 'SALARIO', '3.100,00'], ['22/10', 'PIX RECEBIDO CLIENTE', '520,00']];
-      const exemplo = exemploLinhas.map(x => x.join(' ')).join('\n');
+      const exemplo = ['05/08 PIX RECEBIDO EMPRESA ALFA LTDA 2.350,00', '10/08 SALARIO 3.100,00', '12/08 PAGAMENTO BOLETO -450,00', '20/08 PIX RECEBIDO CLIENTE 380,00', '05/09 PIX RECEBIDO EMPRESA ALFA LTDA 2.350,00', '10/09 SALARIO 3.100,00', '18/09 TRANSF MESMA TITULARIDADE 1.000,00', '25/09 COMPRA CARTAO -210,90', '05/10 PIX RECEBIDO EMPRESA ALFA LTDA 2.410,00', '10/10 SALARIO 3.100,00', '22/10 PIX RECEBIDO CLIENTE 520,00'].join('\n');
       return {
         t: 'Apurador de renda', s: 'Cole o extrato bancário e a leitura automática separa os créditos válidos, calcula a renda média e a capacidade de financiamento.',
         html: `<div class="grid g2"><div class="card"><h3>Extrato</h3>
-            <div class="field"><label>Lançamentos</label><div class="lancamento-head"><span>Data</span><span>Descrição</span><span>Valor (R$)</span><span></span></div><div id="lancamentos" class="lancamentos"></div><div class="lancamento-actions"><button class="btn ghost sm" id="addLanc" type="button">${ic('plus')} Adicionar lançamento</button><details><summary>Ou colar extrato em texto</summary><textarea class="inp" id="ex" rows="5" style="font-family:Consolas,monospace;font-size:12.5px">${h(exemplo)}</textarea><button class="btn ghost sm" id="importarLanc" type="button" style="margin-top:8px">Importar linhas</button></details></div></div>
+            <div class="field"><label>Lançamentos (data, descrição e valor por linha)</label><textarea class="inp" id="ex" style="min-height:260px;font-family:Consolas,monospace;font-size:12.5px">${h(exemplo)}</textarea></div>
             <div class="frow"><div class="field"><label>Taxa de juros (% ao ano)</label><input class="inp" id="tj" type="number" step="0.1" value="9.5"></div><div class="field"><label>Prazo (meses)</label><input class="inp" id="pz" type="number" value="360"></div></div>
             <button class="btn accent full" id="ap">${ic('spark')} Apurar renda</button></div>
           <div class="card" id="res"><h3>Resultado</h3><div class="empty">Cole o extrato e clique em Apurar renda.</div></div></div>`,
         after() {
-          const root = $('#lancamentos');
-          const parseMoney = value => { let s = String(value || '').trim().replace(/\s/g, ''); if (!s) return NaN; if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.'); else s = s.replace(/\./g, ''); return Number(s); };
-          const parseLine = line => { const m = String(line || '').trim().match(/^(\d{2}\/\d{2})(?:\/\d{2,4})?\s+(.+?)\s+(-?[\d.]+(?:,\d{1,2})?)$/); return m ? [m[1], m[2], m[3]] : null; };
-          const addRow = (values = ['', '', '']) => { const row = document.createElement('div'); row.className = 'lanc-row'; row.innerHTML = `<input class="inp ld" placeholder="dd/mm" value="${h(values[0])}"><input class="inp ldesc" placeholder="Ex.: salário" value="${h(values[1])}"><input class="inp lval" placeholder="0,00" value="${h(values[2])}"><button class="remove-lanc" type="button" title="Remover lançamento">×</button>`; root.appendChild(row); row.querySelector('.remove-lanc').onclick = () => row.remove(); };
-          exemploLinhas.forEach(addRow);
-          $('#addLanc').onclick = () => addRow();
-          $('#importarLanc').onclick = () => { const rows = $('#ex').value.split('\n').map(parseLine).filter(Boolean); if (!rows.length) return toast('Não encontrei linhas no formato informado.'); root.innerHTML = ''; rows.forEach(addRow); toast(rows.length + ' lançamento(s) importado(s).'); };
           $('#ap').onclick = () => {
-            const meses = {}, ignorados = [], linhas = [...root.querySelectorAll('.lanc-row')]; let invalidas = 0;
-            linhas.forEach(row => { const data = $('.ld', row).value.trim(), desc = $('.ldesc', row).value.trim(), val = parseMoney($('.lval', row).value); if (!/^\d{2}\/\d{2}$/.test(data) || !desc || Number.isNaN(val)) { invalidas++; return; } if (val <= 0) return; if (/mesma titularidade|estorno|resgate|aplica|empr[eé]stimo/i.test(desc)) { ignorados.push(desc + ' · ' + brl(val)); return; } const mes = data.split('/')[1]; meses[mes] = (meses[mes] || 0) + val; });
-            if (invalidas) toast(invalidas + ' linha(s) incompleta(s) foram ignoradas.');
-            const ks = Object.keys(meses).sort(); if (!ks.length) { $('#res').innerHTML = '<h3>Resultado</h3><div class="empty">Preencha data, descrição e valor em pelo menos uma linha.</div>'; return; }
+            const meses = {}, ignorados = [];
+            $('#ex').value.split('\n').forEach(l => {
+              const m = l.trim().match(/^(\d{2})\/(\d{2})(?:\/\d{2,4})?\s+(.+?)\s+(-?[\d.]+,\d{2})$/); if (!m) return;
+              const val = +m[4].replace(/\./g, '').replace(',', '.');
+              if (val <= 0) return;
+              if (/mesma titularidade|estorno|resgate|aplica|empr[eé]stimo/i.test(m[3])) { ignorados.push(m[3] + ' · ' + brl(val)); return; }
+              meses[m[2]] = (meses[m[2]] || 0) + val;
+            });
+            const ks = Object.keys(meses).sort(); if (!ks.length) { $('#res').innerHTML = '<h3>Resultado</h3><div class="empty">Não encontrei lançamentos. Use o formato: 05/08 DESCRIÇÃO 1.234,56</div>'; return; }
             const media = ks.reduce((s, k) => s + meses[k], 0) / ks.length;
             const parcela = media * .3, i = Math.pow(1 + (+$('#tj').value || 9.5) / 100, 1 / 12) - 1, n = +$('#pz').value || 360;
             const pv = parcela * (1 - Math.pow(1 + i, -n)) / i;
@@ -505,7 +502,7 @@ const VIEWS = {
             <p class="muted" style="font-size:13px">Tudo fica gravado só neste navegador. Para começar de novo:</p><button class="btn danger" id="rs">Restaurar dados de demonstração</button></div>`,
         after() {
           $('#cc').oninput = e => document.documentElement.style.setProperty('--accent', e.target.value);
-          $('#sv').onclick = () => { DB.config.escritorio = $('#ce').value.trim() || 'COR365'; DB.config.whatsapp = $('#cw').value.trim(); DB.config.cor = $('#cc').value; save(); aplicaMarca(); toast('Configurações salvas'); };
+          $('#sv').onclick = () => { DB.config.escritorio = $('#ce').value.trim() || 'IMOV365'; DB.config.whatsapp = $('#cw').value.trim(); DB.config.cor = $('#cc').value; save(); aplicaMarca(); toast('Configurações salvas'); };
           $('#rs').onclick = () => { if (confirm('Apagar tudo e voltar aos dados de demonstração?')) { DB = seedDB(); save(); aplicaMarca(); toast('Dados restaurados'); rerender(); } };
         }
       };
