@@ -441,6 +441,7 @@ function telaMapa(anonimo) {
           map.flyTo(m.getLatLng(), 16, { duration: .6 });
         } else if (t.dataset.int) {
           const p = proc(+t.dataset.int); if (!p || pediu(p)) return;
+          if (map) map.closePopup();
           const x = ps.find(y => y.p.id === p.id), base = carteiraDe(eu);
           if (!base.length) return modal('Cadastre um imóvel primeiro', `<p>Para avisar o administrador, escolha um imóvel da sua carteira. Você ainda não tem imóvel disponível cadastrado.</p>`,
             [{ t: 'Cancelar', cls: 'ghost', fn: closeModal }, { t: 'Cadastrar imóvel', fn: () => { closeModal(); go('app/imoveis'); } }]);
@@ -461,6 +462,7 @@ function telaMapa(anonimo) {
           const p = proc(+t.dataset.tirar); p.historico.push({ data: hoje(), txt: 'Liberação retirada de ' + p.liberadoPara, por: eu }); p.liberadoPara = '';
           depois('Liberação retirada');
         } else if (t.dataset.lib && SESS.admin) {
+          if (map) map.closePopup();
           const p = proc(+t.dataset.lib), ints = (p.interesses || []).map(i => i.corretor);
           const ops = [...new Set([...ints, ...corretoresConhecidos()])];
           formModal('Liberar ' + p.cliente + ' para corretor', [{ k: 'corretor', l: 'Corretor', t: 'select', o: ops, v: p.liberadoPara || ints[0] || ops[0], req: true }], vals => {

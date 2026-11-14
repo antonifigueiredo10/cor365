@@ -247,7 +247,7 @@ td.num,th.num{text-align:right}
 .mitem .mval{font-size:20px;font-weight:800;color:var(--navy);margin:6px 0 10px}
 .mitem .mval small{font-size:12px;font-weight:500;color:var(--muted)}
 .mitem .macts{display:flex;gap:8px;flex-wrap:wrap}
-.mapa-map{position:relative;min-height:0}
+.mapa-map{position:relative;min-height:0;isolation:isolate;z-index:0}
 #mapa{position:absolute;inset:0;background:#e9eef3}
 .mapa-aviso{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-size:14px;z-index:500;pointer-events:none;padding:20px;text-align:center}
 .mapa-leg{position:absolute;right:12px;top:12px;flex-wrap:wrap;z-index:500;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 12px;display:flex;gap:12px;font-size:12px;color:var(--navy);box-shadow:0 4px 14px rgba(15,42,68,.08)}
