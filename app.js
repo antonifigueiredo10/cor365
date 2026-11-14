@@ -331,6 +331,10 @@ let CONV_SEL = null;
    No modo corretor nunca vão para o HTML: nome, CPF, telefone, banco nem o link do processo,
    a não ser que o administrador tenha liberado o cliente para aquele corretor (ou que o cliente já seja dele). */
 /* carteira do corretor: imóveis dele + os da imobiliária sem dono; vendido não entra */
+const normTxt = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+/* imóveis do corretor que ele pode oferecer a um cliente: disponíveis e no MESMO bairro e cidade que o cliente procura */
+const imoveisNoBairro = (nome, cidade, bairro) => carteiraDe(nome).filter(m => m.status === 'Disponível' && normTxt(m.cidade) === normTxt(cidade) && normTxt(m.bairro) === normTxt(bairro));
+let preImovel = null; /* bairro e cidade para abrir o cadastro de imóvel já preenchido, vindo do mapa */
 const carteiraDe = nome => DB.imoveis.filter(m => m.status !== 'Vendido' && (!m.corretor || m.corretor === nome));
 const linkOferta = (p, i) => '#/app/oferta/' + p.id + '.' + i;
 const resumoImovel = m => `${h(m.titulo)} · ${h(m.bairro || '')}${m.cidade ? ', ' + h(m.cidade) : ''} · ${brl(m.valor)}`;
@@ -442,14 +446,13 @@ function telaMapa(anonimo) {
         } else if (t.dataset.int) {
           const p = proc(+t.dataset.int); if (!p || pediu(p)) return;
           if (map) map.closePopup();
-          const x = ps.find(y => y.p.id === p.id), base = carteiraDe(eu);
-          if (!base.length) return modal('Cadastre um imóvel primeiro', `<p>Para avisar o administrador, escolha um imóvel da sua carteira. Você ainda não tem imóvel disponível cadastrado.</p>`,
-            [{ t: 'Cancelar', cls: 'ghost', fn: closeModal }, { t: 'Cadastrar imóvel', fn: () => { closeModal(); go('app/imoveis'); } }]);
-          const nota = m => (m.cidade === x.cidade ? 0 : 2) + (m.valor <= p.valorImovel ? 0 : 1);
-          const ord = base.slice().sort((a, b) => nota(a) - nota(b) || Math.abs(a.valor - p.valorImovel) - Math.abs(b.valor - p.valorImovel));
-          const lab = m => `${m.titulo} · ${m.bairro || ''}, ${m.cidade || ''} · ${brl(m.valor)}${m.valor > p.valorImovel ? ' (acima do valor do cliente)' : ''}`;
+          const x = ps.find(y => y.p.id === p.id), base = imoveisNoBairro(eu, x.cidade, x.bairro);
+          if (!base.length) return modal('Nenhum imóvel seu neste bairro', `<p>Você não tem imóvel <b>disponível</b> em <b>${h(x.bairro)}, ${h(x.cidade)}</b>, que é onde este cliente procura.</p><p class="muted">Cadastre o imóvel desse bairro na sua carteira e depois volte ao mapa para oferecer.</p>`,
+            [{ t: 'Cancelar', cls: 'ghost', fn: closeModal }, { t: 'Cadastrar imóvel em ' + x.bairro, fn: () => { closeModal(); preImovel = { bairro: x.bairro, cidade: x.cidade, status: 'Disponível', volta: true }; go('app/imoveis'); } }]);
+          const ord = base.slice().sort((a, b) => (a.valor > p.valorImovel) - (b.valor > p.valorImovel) || Math.abs(a.valor - p.valorImovel) - Math.abs(b.valor - p.valorImovel));
+          const lab = m => `${m.titulo} · ${brl(m.valor)}${m.valor > p.valorImovel ? ' (acima do valor do cliente)' : ''}`;
           formModal(`Qual imóvel você tem? Cliente de até ${brl(p.valorImovel)} em ${x.bairro}, ${x.cidade}`, [
-            { k: 'imovel', l: 'Imóvel da sua carteira', t: 'select', o: ord.map(m => [m.id, lab(m)]), v: ord[0].id, req: true },
+            { k: 'imovel', l: 'Seus imóveis disponíveis em ' + x.bairro, t: 'select', o: ord.map(m => [m.id, lab(m)]), v: ord[0].id, req: true },
             { k: 'obs', l: 'Recado para o administrador (opcional)', t: 'textarea' }
           ], vals => {
             const m = DB.imoveis.find(i => i.id === +vals.imovel); if (!m) return false;
@@ -775,7 +778,12 @@ const VIEWS = {
         html: `<div class="grid g3">${DB.imoveis.map(m => `<div class="card imv click" data-i="${m.id}" style="cursor:pointer"><div class="ph"><span class="tag ${m.status === 'Disponível' ? 'ok' : m.status === 'Vendido' ? '' : 'warn'}">${h(m.status)}</span></div>
           <div class="bd"><b>${h(m.titulo)}</b><div class="pr">${brl(m.valor)}</div><div class="muted" style="font-size:13px">${h(m.bairro)}, ${h(m.cidade)} · ${num(m.quartos)} quartos · ${num(m.area)} m²</div></div></div>`).join('')}</div>`,
         after(v) {
-          $('#ni').onclick = () => formModal('Novo imóvel', campos(), vals => { DB.imoveis.push({ id: ++DB.seq.imovel, ...vals, corretor: SESS.perfil === 'imob' ? SESS.nome : '' }); save(); rerender(); });
+          const novo = (pre = {}) => formModal(pre.bairro ? 'Novo imóvel em ' + pre.bairro : 'Novo imóvel', campos(pre), vals => {
+            DB.imoveis.push({ id: ++DB.seq.imovel, ...vals, corretor: SESS.perfil === 'imob' ? SESS.nome : '' }); save();
+            if (pre.volta) { toast('Imóvel cadastrado. Agora ofereça o cliente no mapa.'); go('app/mapa'); } else rerender();
+          });
+          $('#ni').onclick = () => novo();
+          if (preImovel) { const pre = preImovel; preImovel = null; novo(pre); }
           $$('[data-i]', v).forEach(c => c.onclick = () => { const m = DB.imoveis.find(x => x.id === +c.dataset.i); formModal('Editar imóvel', campos(m), vals => { Object.assign(m, vals); save(); rerender(); }, [{ t: 'Excluir', cls: 'danger', fn: () => { if (confirm('Excluir este imóvel?')) { DB.imoveis = DB.imoveis.filter(x => x !== m); save(); closeModal(); rerender(); } } }]); });
         }
       };
