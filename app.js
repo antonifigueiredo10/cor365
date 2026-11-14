@@ -103,7 +103,7 @@ const PERFIS = {
   banco: { nome: 'Correspondente bancário', sub: 'Processos, crédito e CRM', ico: 'bank',
     menu: [['painel', 'Painel', 'chart'], ['esteira', 'Esteira de processos', 'kanban'], ['crm', 'CRM de vendas', 'funnel'], ['atendimento', 'Atendimento', 'chat'], ['renda', 'Apurador de renda', 'calc'], ['mapa', 'Mapa de oportunidades', 'pin'], ['formularios', 'Formulários dos bancos', 'doc'], ['config', 'Configurações', 'gear']] },
   imob: { nome: 'Imobiliária e corretor', sub: 'Imóveis, propostas e reservas', ico: 'home',
-    menu: [['painel', 'Painel', 'chart'], ['clientes', 'Meus clientes', 'users'], ['imoveis', 'Imóveis', 'home'], ['empreendimentos', 'Empreendimentos', 'building'], ['propostas', 'Propostas', 'doc'], ['reservas', 'Reservas', 'key'], ['mapa', 'Mapa de oportunidades', 'pin']] },
+    menu: [['painel', 'Painel', 'chart'], ['clientes', 'Meus clientes', 'users'], ['imoveis', 'Imóveis', 'home'], ['empreendimentos', 'Empreendimentos', 'building'], ['propostas', 'Propostas', 'doc'], ['reservas', 'Reservas', 'key'], ['mapa', 'Mapa de oportunidades', 'pin'], ['corretores', 'Corretores', 'users', true]] },
   const: { nome: 'Construtora', sub: 'Empreendimentos e campanhas', ico: 'helmet',
     menu: [['painel', 'Painel', 'chart'], ['empreendimentos', 'Espelho de vendas', 'grid'], ['reservas', 'Reservas', 'key'], ['campanhas', 'Campanhas', 'tag'], ['repasse', 'Repasse', 'swap']] }
 };
@@ -205,6 +205,7 @@ function telaEntrada() {
     }
     const u = DB.usuarios.find(x => x.email === em && x.senha === se);
     if (!u) { $('#err').textContent = 'E-mail ou senha inválidos.'; return; }
+    if (u.ativo === false) { $('#err').textContent = 'Seu acesso está desativado. Fale com o administrador.'; return; }
     setSess({ email: u.email, nome: u.nome, perfil: u.perfil });
     go('app/painel');
   };
@@ -235,7 +236,7 @@ function telaApp(view, arg) {
   const ativo = { processo: SESS.perfil === 'banco' ? 'esteira' : SESS.perfil === 'imob' ? 'clientes' : 'repasse', espelho: 'empreendimentos', oferta: 'mapa' }[view] || view;
   app.innerHTML = `<div class="app">
     <aside class="side" id="side"><div class="brand">${logo(30, true)}<div class="who">${pf.nome}</div></div>
-      <nav>${pf.menu.map(([k, n, i]) => { const b = badge(k); return `<a href="#/app/${k}" class="${k === ativo ? 'on' : ''}">${ic(i)}${n}${b ? `<span class="badge">${b}</span>` : ''}</a>`; }).join('')}</nav>
+      <nav>${pf.menu.filter(m => !m[3] || SESS.admin).map(([k, n, i]) => { const b = badge(k); return `<a href="#/app/${k}" class="${k === ativo ? 'on' : ''}">${ic(i)}${n}${b ? `<span class="badge">${b}</span>` : ''}</a>`; }).join('')}</nav>
       <div class="foot"><b>${h(SESS.nome)}</b><span class="muted" style="color:#8fa5bb">${h(SESS.email)}</span><br>${SESS.admin ? `<button id="hub">${ic('back')} Voltar ao HUB</button><br>` : ''}<button id="sair">${ic('logout')} Sair</button></div></aside>
     <div class="main"><header class="top"><button class="menu-btn" id="mb" aria-label="Menu">${ic('menu')}</button>
       <div><h1>${h(r.t || '')}</h1>${r.s ? `<div class="sub">${r.s}</div>` : ''}</div><div class="actions" id="acts">${r.a || ''}</div></header>
@@ -735,7 +736,7 @@ const VIEWS = {
             <div class="field"><label>Cor de destaque</label><input class="inp" id="cc" type="color" value="${h(DB.config.cor)}" style="height:44px;padding:4px"></div>
             <button class="btn" id="sv">Salvar</button></div>
           <div class="card"><h3>Equipe</h3><div class="tbl-wrap" style="border:0"><table><tbody>${RESPONSAVEIS.map(r => { const n = DB.processos.filter(p => p.responsavel === r); return `<tr><td><b>${r}</b><br><span class="muted" style="font-size:12px">Analista de crédito</span></td><td class="num">${n.length} processos<br><span class="${n.filter(atrasado).length ? 'tag bad' : 'tag ok'}">${n.filter(atrasado).length} atrasado(s)</span></td></tr>`; }).join('')}</tbody></table></div></div></div>
-          <div class="card mt"><h3>Acessos da demonstração</h3><div class="tbl-wrap" style="border:0"><table><thead><tr><th>Perfil</th><th>Nome</th><th>E-mail</th><th>Senha</th></tr></thead><tbody>${DB.usuarios.map(u => `<tr><td>${PERFIS[u.perfil].nome}</td><td>${h(u.nome)}</td><td>${h(u.email)}</td><td>${h(u.senha)}</td></tr>`).join('')}</tbody></table></div>
+          <div class="card mt"><h3>Acessos da demonstração</h3><div class="tbl-wrap" style="border:0"><table><thead><tr><th>Perfil</th><th>Nome</th><th>E-mail</th><th>Senha</th></tr></thead><tbody>${DB.usuarios.map(u => `<tr><td>${PERFIS[u.perfil].nome}</td><td>${h(u.nome)}</td><td>${h(u.email)}</td><td>${SESS.admin ? h(u.senha) : "••••••"}</td></tr>`).join('')}</tbody></table></div>
             <p class="muted" style="font-size:13px">Tudo fica gravado só neste navegador. Para começar de novo:</p><button class="btn danger" id="rs">Restaurar dados de demonstração</button></div>`,
         after() {
           $('#cc').oninput = e => document.documentElement.style.setProperty('--accent', e.target.value);
@@ -748,6 +749,78 @@ const VIEWS = {
 
   /* ---------- IMOBILIÁRIA E CORRETOR ---------- */
   imob: {
+    corretores() {
+      if (!SESS.admin) return { t: 'Corretores', html: `<div class="card"><div class="empty">Só o administrador cadastra corretores.</div></div>` };
+      const nomes = new Set(DB.usuarios.filter(u => u.perfil === 'imob').map(u => u.nome));
+      const semAcesso = [...new Set(DB.processos.map(p => p.corretor).filter(n => n && !nomes.has(n)))].sort();
+      const lista = [...DB.usuarios.filter(u => u.perfil === 'imob').map(u => ({ u, nome: u.nome })), ...semAcesso.map(n => ({ u: null, nome: n }))];
+      const nums = nome => ({
+        imoveis: DB.imoveis.filter(m => m.corretor === nome).length,
+        clientes: DB.processos.filter(p => p.corretor === nome).length,
+        liberados: DB.processos.filter(p => p.liberadoPara === nome && p.corretor !== nome).length,
+        ofertas: DB.processos.reduce((a, p) => a + (p.interesses || []).filter(i => i.corretor === nome).length, 0)
+      });
+      const ini = n => n.split(' ').filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase();
+      const ativos = lista.filter(x => x.u && x.u.ativo !== false).length;
+      return {
+        t: 'Corretores', s: `${ativos} com acesso ativo · cadastre o corretor e ele entra com o próprio e-mail e senha.`,
+        a: `<button class="btn accent" id="nc">${ic('plus')} Novo corretor</button>`,
+        html: lista.length ? `<div class="grid g3">${lista.map(({ u, nome }) => {
+          const n = nums(nome), off = u && u.ativo === false;
+          return `<div class="card cor ${off ? 'off' : ''}">
+            <div class="cor-top"><span class="cor-av">${h(ini(nome))}</span><div class="cor-nm"><b>${h(nome)}</b><small>${u ? h(u.email) : 'sem acesso ao sistema'}</small></div>
+              <span class="tag ${!u ? 'warn' : off ? 'bad' : 'ok'}">${!u ? 'Sem acesso' : off ? 'Desativado' : 'Ativo'}</span></div>
+            <div class="cor-info">${u && u.telefone ? `<span>${ic('chat')} ${h(u.telefone)}</span>` : ''}${u && u.creci ? `<span>CRECI ${h(u.creci)}</span>` : ''}${u && u.imobiliaria ? `<span>${ic('building')} ${h(u.imobiliaria)}</span>` : ''}</div>
+            <div class="cor-nums"><div><b>${n.imoveis}</b><small>imóveis</small></div><div><b>${n.clientes}</b><small>clientes</small></div><div><b>${n.liberados}</b><small>liberados</small></div><div><b>${n.ofertas}</b><small>ofertas</small></div></div>
+            <div class="cor-acts">${u ? `<button class="btn ghost sm" data-ed="${h(u.email)}">Editar</button><button class="btn ghost sm" data-sn="${h(u.email)}">${ic('key')} Nova senha</button><button class="btn ghost sm" data-at="${h(u.email)}">${off ? 'Reativar' : 'Desativar'}</button>`
+              : `<button class="btn sm" data-cria="${h(nome)}">${ic('plus')} Criar acesso</button>`}</div></div>`;
+        }).join('')}</div>` : `<div class="card"><div class="empty">Nenhum corretor ainda. Clique em Novo corretor.</div></div>`,
+        after(v) {
+          const senhaSug = () => 'Cor-' + Math.random().toString(36).slice(2, 8);
+          const campos = (u = {}, nova) => [
+            { k: 'nome', l: 'Nome completo', req: true, v: u.nome }, { k: 'email', l: 'E-mail de acesso', t: 'email', req: true, v: u.email },
+            { k: 'telefone', l: 'Telefone / WhatsApp', v: u.telefone, half: true, ph: '(67) 90000-0000' }, { k: 'creci', l: 'CRECI', v: u.creci, half: true },
+            { k: 'imobiliaria', l: 'Imobiliária', v: u.imobiliaria || 'Imobiliária Horizonte' },
+            ...(nova ? [{ k: 'senha', l: 'Senha inicial (passe para o corretor)', req: true, v: senhaSug() }] : [])
+          ];
+          const valida = (vals, atual) => {
+            vals.email = vals.email.toLowerCase();
+            if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(vals.email)) { toast('E-mail inválido'); return false; }
+            if (vals.email === ADMIN.email || DB.usuarios.some(x => x.email === vals.email && x !== atual)) { toast('Já existe um acesso com esse e-mail'); return false; }
+            if (vals.senha !== undefined && vals.senha.length < 6) { toast('A senha precisa de pelo menos 6 caracteres'); return false; }
+            return true;
+          };
+          /* trocar o nome do corretor leva junto clientes, imóveis, liberações e ofertas (tudo é ligado pelo nome) */
+          const renomeia = (de, para) => {
+            if (de === para) return;
+            DB.processos.forEach(p => { if (p.corretor === de) p.corretor = para; if (p.liberadoPara === de) p.liberadoPara = para; (p.interesses || []).forEach(i => { if (i.corretor === de) i.corretor = para; }); });
+            DB.imoveis.forEach(m => { if (m.corretor === de) m.corretor = para; });
+          };
+          const novo = (pre = {}) => formModal(pre.nome ? 'Criar acesso para ' + pre.nome : 'Novo corretor', campos(pre, true), vals => {
+            if (!valida(vals)) return false;
+            if (!pre.nome && DB.usuarios.some(x => x.perfil === 'imob' && x.nome === vals.nome)) { toast('Já existe um corretor com esse nome'); return false; }
+            if (pre.nome) renomeia(pre.nome, vals.nome);
+            DB.usuarios.push({ ...vals, perfil: 'imob', ativo: true, criado: hoje() }); save();
+            toast('Corretor cadastrado. Entrada: ' + vals.email); rerender();
+          });
+          $('#nc').onclick = () => novo();
+          const acha = em => DB.usuarios.find(x => x.email === em);
+          $$('[data-cria]', v).forEach(b => b.onclick = () => novo({ nome: b.dataset.cria }));
+          $$('[data-ed]', v).forEach(b => b.onclick = () => { const u = acha(b.dataset.ed); formModal('Editar ' + u.nome, campos(u), vals => {
+            if (!valida(vals, u)) return false;
+            if (vals.nome !== u.nome && DB.usuarios.some(x => x !== u && x.perfil === 'imob' && x.nome === vals.nome)) { toast('Já existe um corretor com esse nome'); return false; }
+            renomeia(u.nome, vals.nome); Object.assign(u, vals); save(); toast('Dados salvos'); rerender();
+          }); });
+          $$('[data-sn]', v).forEach(b => b.onclick = () => { const u = acha(b.dataset.sn); formModal('Nova senha para ' + u.nome, [{ k: 'senha', l: 'Nova senha (passe para o corretor)', req: true, v: senhaSug() }], vals => {
+            if (vals.senha.length < 6) { toast('A senha precisa de pelo menos 6 caracteres'); return false; }
+            u.senha = vals.senha; save(); toast('Senha trocada');
+          }); });
+          $$('[data-at]', v).forEach(b => b.onclick = () => { const u = acha(b.dataset.at); const des = u.ativo !== false;
+            if (des && !confirm('Desativar o acesso de ' + u.nome + '? Ele não consegue mais entrar; os dados dele continuam.')) return;
+            u.ativo = !des; save(); toast(des ? 'Acesso desativado' : 'Acesso reativado'); rerender(); });
+        }
+      };
+    },
     mapa: () => telaMapa(true),
     painel() {
       const meus = DB.processos.filter(p => p.corretor === SESS.nome), res = listaReservas(false);
