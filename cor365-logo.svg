@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 230 56" width="460" height="112">
+  <rect x="2" y="4" width="48" height="48" rx="13" fill="#0f2a44"/>
+  <path d="M12 28 L26 16 L40 28" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M15.5 34.5 a10.5 7 0 0 0 21 0" fill="none" stroke="#f07a28" stroke-width="5" stroke-linecap="round"/>
+  <text x="62" y="41" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="32" font-weight="800" letter-spacing="0.5" fill="#0f2a44">COR<tspan fill="#f07a28">365</tspan></text>
+</svg>

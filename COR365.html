@@ -1,0 +1,1054 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>COR365 — Sistema de gestão</title>
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMzAgNTYiIHdpZHRoPSI0NjAiIGhlaWdodD0iMTEyIj4KICA8cmVjdCB4PSIyIiB5PSI0IiB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHJ4PSIxMyIgZmlsbD0iIzBmMmE0NCIvPgogIDxwYXRoIGQ9Ik0xMiAyOCBMMjYgMTYgTDQwIDI4IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmZmZmYiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CiAgPHBhdGggZD0iTTE1LjUgMzQuNSBhMTAuNSA3IDAgMCAwIDIxIDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2YwN2EyOCIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8dGV4dCB4PSI2MiIgeT0iNDEiIGZvbnQtZmFtaWx5PSJJbnRlciwgU2Vnb2UgVUksIEFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjMyIiBmb250LXdlaWdodD0iODAwIiBsZXR0ZXItc3BhY2luZz0iMC41IiBmaWxsPSIjMGYyYTQ0Ij5DT1I8dHNwYW4gZmlsbD0iI2YwN2EyOCI+MzY1PC90c3Bhbj48L3RleHQ+Cjwvc3ZnPgo=">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0f2a44; --navy2:#1b3d5e; --ink:#13202e; --muted:#5f6f80; --line:#dfe5ec;
+  --bg:#f4f6f9; --card:#ffffff; --accent:#f07a28; --accent-soft:#fdeee2;
+  --ok:#1f9d63; --ok-soft:#e3f5ec; --warn:#d48a0b; --warn-soft:#fdf3dd;
+  --bad:#d64545; --bad-soft:#fbe6e6; --info:#2f6fb3; --info-soft:#e5eff9;
+  --r:12px; --sh:0 1px 2px rgba(15,42,68,.06),0 4px 14px rgba(15,42,68,.05);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:Inter,"Segoe UI",system-ui,Arial,sans-serif;color:var(--ink);background:var(--bg);font-size:14px;line-height:1.45}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--navy2)}
+.dots{background-color:var(--bg);background-image:radial-gradient(#d3dae3 1px,transparent 1px);background-size:22px 22px}
+svg.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* ===== Escolha de perfil e login ===== */
+.gate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px}
+.gate-box{width:100%;max-width:430px}
+.gate .kicker{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--navy2);font-weight:600;margin:6px 0 14px}
+.gate h1{font-size:24px;margin:0 0 24px;letter-spacing:-.01em}
+.perfil{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:12px;cursor:pointer;transition:.15s}
+.perfil:hover{border-color:var(--navy2);box-shadow:var(--sh);transform:translateY(-1px)}
+.perfil .ico{width:36px;height:36px;border-radius:8px;background:#e9eef4;color:var(--navy);display:grid;place-items:center}
+.perfil b{display:block;font-size:15px}
+.perfil small{color:var(--muted)}
+.perfil .chev{margin-left:auto;color:var(--muted)}
+.gate-links{display:flex;justify-content:space-between;margin-top:20px;gap:12px;flex-wrap:wrap}
+.gate-links a{display:inline-flex;gap:6px;align-items:center;text-decoration:none;font-weight:500}
+.gate-links svg.i{width:14px;height:14px}
+.field{margin-bottom:14px}
+.field label{display:block;font-weight:500;margin-bottom:6px}
+.field label .req{color:var(--bad)}
+.inp{width:100%;padding:10px 12px;border:1px solid #cdd5df;border-radius:8px;background:#fff;outline:none}
+.inp:focus{border-color:var(--navy2);box-shadow:0 0 0 3px rgba(27,61,94,.12)}
+textarea.inp{min-height:80px;resize:vertical}
+.demo-hint{background:var(--info-soft);color:var(--navy);border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:16px}
+.back{display:inline-flex;align-items:center;gap:4px;color:var(--muted);text-decoration:none;font-size:13px;margin-bottom:18px;cursor:pointer;background:none;border:0;padding:0}
+.erro{color:var(--bad);font-size:13px;min-height:18px;margin-bottom:8px}
+
+/* ===== Botões e etiquetas ===== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid transparent;border-radius:8px;padding:9px 14px;font-weight:600;cursor:pointer;background:var(--navy);color:#fff;white-space:nowrap}
+.btn:hover{background:var(--navy2)}
+.btn.full{width:100%;padding:11px}
+.btn.ghost{background:#fff;color:var(--navy);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--navy2)}
+.btn.accent{background:var(--accent)}
+.btn.accent:hover{filter:brightness(.95)}
+.btn.danger{background:#fff;color:var(--bad);border-color:#f0c9c9}
+.btn.sm{padding:6px 10px;font-size:13px}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600;background:#eef1f5;color:var(--muted);white-space:nowrap}
+.tag.ok{background:var(--ok-soft);color:var(--ok)} .tag.warn{background:var(--warn-soft);color:var(--warn)}
+.tag.bad{background:var(--bad-soft);color:var(--bad)} .tag.info{background:var(--info-soft);color:var(--info)}
+.tag.acc{background:var(--accent-soft);color:var(--accent)}
+
+/* ===== Estrutura do app ===== */
+.app{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
+.side{background:var(--navy);color:#c9d6e3;display:flex;flex-direction:column;padding:18px 14px;position:sticky;top:0;height:100vh}
+.side .brand{padding:4px 8px 14px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:12px}
+.side .brand .who{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#8fa5bb;margin-top:6px}
+.side nav{display:flex;flex-direction:column;gap:2px;overflow:auto}
+.side nav a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;color:#c9d6e3;text-decoration:none;font-weight:500}
+.side nav a:hover{background:rgba(255,255,255,.06);color:#fff}
+.side nav a.on{background:rgba(255,255,255,.1);color:#fff;box-shadow:inset 3px 0 0 var(--accent)}
+.side .badge{margin-left:auto;background:var(--accent);color:#fff;border-radius:999px;font-size:11px;padding:1px 7px}
+.side .foot{margin-top:auto;padding:12px 8px 0;border-top:1px solid rgba(255,255,255,.08);font-size:13px}
+.side .foot b{color:#fff;display:block}
+.side .foot button{margin-top:10px;background:none;border:0;color:#8fa5bb;display:inline-flex;gap:6px;align-items:center;cursor:pointer;padding:0}
+.side .foot button:hover{color:#fff}
+.main{min-width:0;display:flex;flex-direction:column}
+.top{display:flex;align-items:center;gap:12px;padding:18px 28px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.top h1{font-size:19px;margin:0;letter-spacing:-.01em}
+.top .sub{color:var(--muted);font-size:13px}
+.top .actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.menu-btn{display:none;background:none;border:0;padding:4px;cursor:pointer;color:var(--navy)}
+.view{padding:24px 28px 48px}
+
+/* ===== Cartões e grades ===== */
+.grid{display:grid;gap:16px}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))} .g3{grid-template-columns:repeat(3,minmax(0,1fr))} .g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:18px}
+.card h3{margin:0 0 12px;font-size:15px}
+.card .head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.card .head h3{margin:0}
+.card .head .r{margin-left:auto}
+.kpi .lab{color:var(--muted);font-size:13px;display:flex;align-items:center;gap:6px}
+.kpi .val{font-size:26px;font-weight:700;margin-top:6px;letter-spacing:-.02em}
+.kpi .foot{font-size:12px;color:var(--muted);margin-top:4px}
+.kpi.alert .val{color:var(--bad)}
+.mt{margin-top:16px}
+.muted{color:var(--muted)}
+.empty{color:var(--muted);text-align:center;padding:28px 10px}
+
+/* barras simples */
+.bars .row{display:grid;grid-template-columns:170px 1fr 34px;gap:10px;align-items:center;margin:7px 0;font-size:13px}
+.bars .track{height:10px;background:#eef1f5;border-radius:999px;overflow:hidden}
+.bars .fill{height:100%;background:var(--navy2);border-radius:999px}
+.bars .n{text-align:right;font-weight:600}
+
+/* tabelas */
+.tbl-wrap{overflow:auto;border:1px solid var(--line);border-radius:var(--r);background:#fff}
+table{width:100%;border-collapse:collapse}
+th,td{padding:11px 14px;text-align:left;border-bottom:1px solid #edf0f4;vertical-align:middle}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600;background:#fafbfc}
+tr:last-child td{border-bottom:0}
+tr.click{cursor:pointer} tr.click:hover td{background:#f8fafc}
+td.num,th.num{text-align:right}
+
+/* filtros */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.toolbar .inp{width:auto;min-width:200px}
+.toolbar .grow{flex:1}
+
+/* ===== Kanban (esteira e CRM) ===== */
+.kanban{display:flex;gap:14px;overflow-x:auto;padding-bottom:12px;align-items:flex-start}
+.col{flex:0 0 260px;background:#eaeef3;border-radius:var(--r);padding:10px;min-height:120px}
+.col.over{outline:2px dashed var(--navy2);outline-offset:-2px}
+.col-h{display:flex;align-items:center;gap:6px;padding:4px 4px 10px;font-weight:600;font-size:13px}
+.col-h .cnt{background:#fff;border-radius:999px;padding:0 8px;font-size:12px;color:var(--muted)}
+.col-h .sla{margin-left:auto;font-size:11px;color:var(--muted);font-weight:500}
+.kc{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 12px;margin-bottom:8px;cursor:grab;box-shadow:0 1px 2px rgba(15,42,68,.05)}
+.kc:hover{border-color:#b9c6d4}
+.kc.dragging{opacity:.4}
+.kc b{display:block;font-size:13.5px}
+.kc .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px;align-items:center}
+.kc .line{font-size:12px;color:var(--muted);margin-top:4px;display:flex;justify-content:space-between;gap:6px}
+.kc.late{border-left:3px solid var(--bad)}
+
+/* ===== Linha do tempo das fases ===== */
+.steps{display:flex;gap:4px;overflow-x:auto;padding:4px 0 8px}
+.step{flex:1;min-width:92px;text-align:center;font-size:11.5px;color:var(--muted)}
+.step .bar{height:6px;border-radius:999px;background:#e3e8ee;margin-bottom:6px}
+.step.done .bar{background:var(--ok)} .step.now .bar{background:var(--accent)}
+.step.now{color:var(--ink);font-weight:600}
+.dl{display:grid;grid-template-columns:150px 1fr;gap:8px 12px;font-size:13.5px}
+.dl dt{color:var(--muted)} .dl dd{margin:0;font-weight:500}
+.checklist label{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #edf0f4;cursor:pointer}
+.checklist label:last-child{border:0}
+.checklist input{width:16px;height:16px;accent-color:var(--ok)}
+.hist{list-style:none;padding:0;margin:0}
+.hist li{padding:8px 0 8px 16px;border-left:2px solid var(--line);position:relative;font-size:13px}
+.hist li:before{content:"";position:absolute;left:-5px;top:13px;width:8px;height:8px;border-radius:50%;background:var(--navy2)}
+.hist li small{color:var(--muted);display:block}
+
+/* ===== Atendimento (chat) ===== */
+.chat{display:grid;grid-template-columns:290px 1fr;height:calc(100vh - 150px);min-height:460px;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:#fff}
+.chat .list{border-right:1px solid var(--line);overflow:auto}
+.chat .conv{padding:12px 14px;border-bottom:1px solid #edf0f4;cursor:pointer}
+.chat .conv:hover{background:#f8fafc}
+.chat .conv.on{background:#eef3f8}
+.chat .conv b{display:flex;justify-content:space-between;font-size:13.5px}
+.chat .conv small{color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat .pane{display:flex;flex-direction:column;min-width:0}
+.chat .ph{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.chat .msgs{flex:1;overflow:auto;padding:16px;background:#f3efe9}
+.msg{max-width:72%;padding:8px 11px;border-radius:10px;margin:6px 0;font-size:13.5px;box-shadow:0 1px 1px rgba(0,0,0,.06);background:#fff}
+.msg.eu{margin-left:auto;background:#dcf3e3}
+.msg.bot{margin-left:auto;background:#e5eff9}
+.msg small{display:block;font-size:11px;color:var(--muted);text-align:right;margin-top:2px}
+.chat .comp{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line)}
+.quick{display:flex;gap:6px;flex-wrap:wrap;padding:8px 10px 0}
+.quick button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:4px 10px;font-size:12px;cursor:pointer}
+.quick button:hover{border-color:var(--navy2)}
+
+/* ===== Espelho de vendas ===== */
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;margin-bottom:14px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:14px;height:14px;border-radius:4px;display:inline-block}
+.tower{margin-bottom:22px}
+.tower h4{margin:0 0 8px}
+.floors{display:flex;flex-direction:column;gap:6px}
+.floor{display:flex;gap:6px;align-items:center}
+.floor .fl{width:52px;font-size:12px;color:var(--muted)}
+.un{width:78px;height:46px;border-radius:8px;border:1px solid transparent;cursor:pointer;font-weight:600;font-size:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}
+.un small{font-weight:500;font-size:10.5px;opacity:.85}
+.un:hover{transform:translateY(-1px);box-shadow:var(--sh)}
+.s-disponivel{background:var(--ok-soft);color:var(--ok);border-color:#bfe6d2}
+.s-reservado{background:var(--warn-soft);color:var(--warn);border-color:#f0dba8}
+.s-vendido{background:#e3e8ee;color:#5f6f80;border-color:#cfd7e0}
+.s-bloqueado{background:var(--bad-soft);color:var(--bad);border-color:#f0c9c9}
+
+/* ===== Imóveis ===== */
+.imv{overflow:hidden;padding:0}
+.imv .ph{height:130px;background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 60%,var(--accent) 140%);display:flex;align-items:flex-end;padding:10px;color:#fff}
+.imv .bd{padding:14px 16px}
+.imv .pr{font-size:18px;font-weight:700;margin:4px 0}
+
+/* ===== Modal ===== */
+.modal-bg{position:fixed;inset:0;background:rgba(15,32,46,.45);display:flex;align-items:flex-start;justify-content:center;padding:6vh 16px;z-index:50;overflow:auto}
+.modal{background:#fff;border-radius:14px;width:100%;max-width:560px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal.wide{max-width:820px}
+.modal .mh{display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line)}
+.modal .mh h3{margin:0;font-size:16px}
+.modal .mh button{margin-left:auto;background:none;border:0;font-size:22px;cursor:pointer;color:var(--muted);line-height:1}
+.modal .mb{padding:18px 20px}
+.modal .mf{display:flex;gap:8px;justify-content:flex-end;padding:14px 20px;border-top:1px solid var(--line)}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.lancamento-head,.lanc-row{display:grid;grid-template-columns:92px minmax(0,1fr) 145px 34px;gap:8px;align-items:center}
+.lancamento-head{color:var(--muted);font-size:11px;font-weight:600;margin-bottom:6px}
+.lanc-row{margin-bottom:8px}
+.lanc-row .inp{padding:8px 9px;font-size:13px}
+.lanc-row .remove-lanc{width:30px;height:34px;border:1px solid #f0c9c9;border-radius:8px;background:#fff;color:var(--bad);font-size:19px;line-height:1}
+.lanc-row .remove-lanc:hover{background:var(--bad-soft)}
+.lancamento-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px}
+.lancamento-actions details{flex:1;min-width:220px}
+.lancamento-actions summary{color:var(--navy2);font-size:12px;cursor:pointer}
+.lancamento-actions details[open]{margin-top:4px}
+.lancamento-actions details textarea{margin-top:8px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;border-radius:10px;z-index:80;box-shadow:var(--sh);font-weight:500}
+
+/* formulário bancário impresso */
+.doc{border:1px solid var(--line);border-radius:8px;padding:22px;font-size:13px}
+.doc .dh{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--navy);padding-bottom:10px;margin-bottom:14px}
+.doc table td{border:1px solid #d8dee6;padding:7px 9px}
+.doc table td:first-child{width:38%;background:#f6f8fa;color:var(--muted)}
+.doc .sig{margin-top:40px;display:grid;grid-template-columns:1fr 1fr;gap:30px;text-align:center;font-size:12px}
+.doc .sig div{border-top:1px solid #333;padding-top:6px}
+
+@media print{
+  body *{visibility:hidden}
+  .doc,.doc *{visibility:visible}
+  .doc{position:absolute;left:0;top:0;width:100%;border:0}
+}
+
+@media (max-width:1100px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:1fr 1fr}}
+@media (max-width:820px){
+  .app{grid-template-columns:1fr}
+  .side{position:fixed;left:0;top:0;width:260px;z-index:40;transform:translateX(-100%);transition:.2s}
+  .side.open{transform:none;box-shadow:0 0 0 100vmax rgba(0,0,0,.35)}
+  .menu-btn{display:block}
+  .top{padding:14px 16px;flex-wrap:wrap}
+  .view{padding:16px}
+  .g4,.g3,.g2{grid-template-columns:1fr}
+  .chat{grid-template-columns:1fr;height:auto}
+  .chat .list{max-height:220px;border-right:0;border-bottom:1px solid var(--line)}
+  .chat .msgs{min-height:300px}
+  .frow{grid-template-columns:1fr}
+  .bars .row{grid-template-columns:110px 1fr 28px}
+  .dl{grid-template-columns:120px 1fr}
+}
+
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+/* COR365 · base de demonstração (fica só no navegador, chave cor365_db) */
+const FASES = [
+  { k: 'cadastro',     n: 'Cadastro',               sla: 2 },
+  { k: 'operacional',  n: 'Análise operacional',    sla: 2 },
+  { k: 'credito',      n: 'Análise de crédito',     sla: 5 },
+  { k: 'engenharia',   n: 'Engenharia',             sla: 7 },
+  { k: 'montagem',     n: 'Montagem',               sla: 3 },
+  { k: 'conformidade', n: 'Conformidade',           sla: 3 },
+  { k: 'agencia',      n: 'Agência',                sla: 5 },
+  { k: 'cartorio',     n: 'Cartório',               sla: 15 },
+  { k: 'obra',         n: 'Acompanhamento de obra', sla: 90 }
+];
+const ETAPAS_CRM = ['Novo lead', 'Primeiro contato', 'Simulação', 'Documentação', 'Convertido', 'Perdido'];
+const BANCOS = ['Caixa', 'Itaú', 'Bradesco', 'Santander', 'Banco do Brasil', 'Inter'];
+const DOCS_PADRAO = ['RG e CPF', 'Comprovante de estado civil', 'Comprovante de residência', 'Comprovante de renda (3 últimos)', 'Extrato do FGTS', 'Declaração de IR', 'Carteira de trabalho', 'Matrícula do imóvel'];
+const RESPONSAVEIS = ['Ana Ribeiro', 'Bruno Matos', 'Carla Nunes', 'Diego Prado'];
+
+function seedDB() {
+  const d = (n) => { const x = new Date(); x.setDate(x.getDate() + n); return x.toISOString().slice(0, 10); };
+  const P = (id, cliente, cpf, tel, banco, mod, valor, fin, renda, fase, diasNaFase, resp, corretor, emp, unidade, docsOk) => {
+    const docs = {}; DOCS_PADRAO.forEach((x, i) => docs[x] = i < docsOk);
+    return {
+      id, cliente, cpf, telefone: tel, banco, modalidade: mod, valorImovel: valor, financiamento: fin, renda,
+      fase, entrouFase: d(-diasNaFase), responsavel: resp, corretor, imobiliaria: corretor ? 'Imobiliária Horizonte' : '',
+      empreendimento: emp, unidade, docs, criado: d(-diasNaFase - fase * 4 - 2),
+      historico: [{ data: d(-diasNaFase - fase * 4 - 2), txt: 'Processo aberto', por: resp }, { data: d(-diasNaFase), txt: 'Entrou na fase ' + FASES[fase].n, por: resp }]
+    };
+  };
+  return {
+    versao: 1,
+    config: { escritorio: 'COR365 Correspondente', cor: '#f07a28' },
+    usuarios: [
+      { email: 'banco@cor365.com.br', senha: '123456', nome: 'Ana Ribeiro', perfil: 'banco' },
+      { email: 'corretor@cor365.com.br', senha: '123456', nome: 'Marcos Lima', perfil: 'imob' },
+      { email: 'construtora@cor365.com.br', senha: '123456', nome: 'Paula Torres', perfil: 'const' }
+    ],
+    processos: [
+      P(1001, 'Juliana Costa',     '123.456.789-01', '(67) 99811-2030', 'Caixa',     'MCMV Faixa 2', 240000, 192000, 4800, 0, 1, 'Ana Ribeiro', 'Marcos Lima', 'Residencial Jardim das Águas', 'A-302', 3),
+      P(1002, 'Rafael Souza',      '234.567.890-12', '(67) 99702-1144', 'Caixa',     'MCMV Faixa 3', 310000, 248000, 7200, 1, 3, 'Bruno Matos', 'Marcos Lima', 'Residencial Jardim das Águas', 'B-501', 4),
+      P(1003, 'Fernanda Alves',    '345.678.901-23', '(67) 99654-7788', 'Itaú',      'SBPE',         520000, 390000, 15000, 2, 2, 'Carla Nunes', '', '', '', 6),
+      P(1004, 'Thiago Martins',    '456.789.012-34', '(67) 99133-5522', 'Caixa',     'MCMV Faixa 2', 225000, 180000, 4100, 2, 7, 'Ana Ribeiro', 'Lívia Rocha', 'Residencial Jardim das Águas', 'A-104', 5),
+      P(1005, 'Patrícia Mendes',   '567.890.123-45', '(67) 99288-9090', 'Bradesco',  'SBPE',         680000, 476000, 21000, 3, 4, 'Diego Prado', 'Lívia Rocha', '', '', 7),
+      P(1006, 'Lucas Ferreira',    '678.901.234-56', '(67) 99341-6677', 'Caixa',     'MCMV Faixa 3', 295000, 236000, 6900, 3, 9, 'Bruno Matos', 'Marcos Lima', 'Vista Parque Residence', 'T1-702', 6),
+      P(1007, 'Camila Rodrigues',  '789.012.345-67', '(67) 99477-1212', 'Santander', 'SBPE',         450000, 337500, 13500, 4, 1, 'Carla Nunes', '', '', '', 8),
+      P(1008, 'Gabriel Oliveira',  '890.123.456-78', '(67) 99561-3434', 'Caixa',     'MCMV Faixa 2', 232000, 185600, 4500, 5, 2, 'Ana Ribeiro', 'Marcos Lima', 'Residencial Jardim das Águas', 'B-203', 8),
+      P(1009, 'Mariana Pereira',   '901.234.567-89', '(67) 99619-4545', 'Caixa',     'Pró-Cotista',  380000, 304000, 9800, 6, 6, 'Diego Prado', 'Lívia Rocha', 'Vista Parque Residence', 'T2-401', 8),
+      P(1010, 'Eduardo Lima',      '012.345.678-90', '(67) 99702-5656', 'Inter',     'SBPE',         590000, 413000, 18500, 7, 10, 'Bruno Matos', '', '', '', 8),
+      P(1011, 'Aline Barbosa',     '111.222.333-44', '(67) 99833-6767', 'Caixa',     'MCMV Faixa 2', 228000, 182400, 4300, 8, 20, 'Ana Ribeiro', 'Marcos Lima', 'Residencial Jardim das Águas', 'A-201', 8),
+      P(1012, 'Rodrigo Cardoso',   '222.333.444-55', '(67) 99944-7878', 'Banco do Brasil', 'SBPE',   410000, 307500, 12100, 1, 1, 'Carla Nunes', 'Lívia Rocha', '', '', 2),
+      P(1013, 'Beatriz Nogueira',  '333.444.555-66', '(67) 99155-8989', 'Caixa',     'MCMV Faixa 3', 318000, 254400, 7600, 0, 3, 'Diego Prado', '', 'Vista Parque Residence', 'T1-303', 1)
+    ],
+    leads: [
+      { id: 1, nome: 'Henrique Batista', telefone: '(67) 99210-1010', origem: 'Site', etapa: 0, valor: 260000, criado: d(-1) },
+      { id: 2, nome: 'Sabrina Lopes', telefone: '(67) 99320-2020', origem: 'Instagram', etapa: 0, valor: 300000, criado: d(-2) },
+      { id: 3, nome: 'Otávio Freitas', telefone: '(67) 99430-3030', origem: 'Indicação de corretor', etapa: 1, valor: 450000, criado: d(-4) },
+      { id: 4, nome: 'Renata Castro', telefone: '(67) 99540-4040', origem: 'WhatsApp', etapa: 2, valor: 235000, criado: d(-6) },
+      { id: 5, nome: 'Vinícius Pires', telefone: '(67) 99650-5050', origem: 'Site', etapa: 2, valor: 520000, criado: d(-7) },
+      { id: 6, nome: 'Larissa Teixeira', telefone: '(67) 99760-6060', origem: 'Feirão', etapa: 3, valor: 280000, criado: d(-9) },
+      { id: 7, nome: 'Fábio Moura', telefone: '(67) 99870-7070', origem: 'Indicação de corretor', etapa: 4, valor: 330000, criado: d(-15) },
+      { id: 8, nome: 'Daniela Reis', telefone: '(67) 99980-8080', origem: 'Instagram', etapa: 5, valor: 210000, criado: d(-20) }
+    ],
+    conversas: [
+      { id: 1, cliente: 'Juliana Costa', telefone: '(67) 99811-2030', processo: 1001, naoLidas: 2, msgs: [
+        { de: 'cli', txt: 'Oi, boa tarde! Mandei os documentos ontem, chegaram?', hora: '14:02' },
+        { de: 'eu', txt: 'Boa tarde, Juliana! Chegaram sim, falta só o comprovante de residência.', hora: '14:05' },
+        { de: 'cli', txt: 'Vou mandar agora. Pode ser conta de luz?', hora: '14:07' },
+        { de: 'cli', txt: 'Está no nome do meu marido.', hora: '14:07' } ] },
+      { id: 2, cliente: 'Rafael Souza', telefone: '(67) 99702-1144', processo: 1002, naoLidas: 0, msgs: [
+        { de: 'cli', txt: 'Qual o prazo da análise?', hora: '10:15' },
+        { de: 'bot', txt: 'A análise de crédito leva em média 5 dias úteis depois da documentação completa.', hora: '10:15' } ] },
+      { id: 3, cliente: 'Renata Castro', telefone: '(67) 99540-4040', processo: null, naoLidas: 1, msgs: [
+        { de: 'cli', txt: 'Quero simular um financiamento de 235 mil, ganho 5 mil por mês.', hora: '09:40' } ] }
+    ],
+    imoveis: [
+      { id: 1, titulo: 'Casa 3 quartos com suíte', bairro: 'Tiradentes', cidade: 'Campo Grande', valor: 420000, quartos: 3, area: 140, status: 'Disponível' },
+      { id: 2, titulo: 'Apartamento 2 quartos', bairro: 'Centro', cidade: 'Campo Grande', valor: 285000, quartos: 2, area: 62, status: 'Disponível' },
+      { id: 3, titulo: 'Sobrado em condomínio', bairro: 'Carandá Bosque', cidade: 'Campo Grande', valor: 780000, quartos: 4, area: 210, status: 'Em proposta' },
+      { id: 4, titulo: 'Casa térrea MCMV', bairro: 'Nova Lima', cidade: 'Campo Grande', valor: 215000, quartos: 2, area: 52, status: 'Disponível' },
+      { id: 5, titulo: 'Apartamento 3 quartos', bairro: 'Jardim dos Estados', cidade: 'Campo Grande', valor: 560000, quartos: 3, area: 96, status: 'Vendido' }
+    ],
+    propostas: [
+      { id: 1, cliente: 'Otávio Freitas', imovel: 'Sobrado em condomínio', valor: 760000, pagamento: 'Financiamento SBPE', status: 'Enviada', data: d(-3), corretor: 'Marcos Lima' },
+      { id: 2, cliente: 'Fábio Moura', imovel: 'Vista Parque Residence · T1-505', valor: 328000, pagamento: 'Financiamento MCMV', status: 'Aceita', data: d(-10), corretor: 'Marcos Lima' },
+      { id: 3, cliente: 'Daniela Reis', imovel: 'Casa térrea MCMV', valor: 200000, pagamento: 'À vista', status: 'Recusada', data: d(-18), corretor: 'Lívia Rocha' }
+    ],
+    empreendimentos: [
+      mkEmp(1, 'Residencial Jardim das Águas', 'Campo Grande', ['A', 'B'], 6, 4, 210000, d),
+      mkEmp(2, 'Vista Parque Residence', 'Campo Grande', ['T1', 'T2'], 8, 4, 290000, d)
+    ],
+    campanhas: [
+      { id: 1, nome: 'Black Friday da casa própria', empreendimento: 1, desconto: 5, inicio: d(-5), fim: d(16), status: 'Ativa' },
+      { id: 2, nome: 'Entrada facilitada em 60x', empreendimento: 2, desconto: 0, inicio: d(-30), fim: d(30), status: 'Ativa' },
+      { id: 3, nome: 'Feirão de outubro', empreendimento: 1, desconto: 3, inicio: d(-45), fim: d(-14), status: 'Encerrada' }
+    ],
+    seq: { processo: 1013, lead: 8, conversa: 3, imovel: 5, proposta: 3, campanha: 3 }
+  };
+}
+
+function mkEmp(id, nome, cidade, torres, andares, porAndar, precoBase, d) {
+  const unidades = {};
+  let seed = id * 97;
+  const rnd = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+  torres.forEach(t => {
+    for (let a = 1; a <= andares; a++) for (let u = 1; u <= porAndar; u++) {
+      const cod = t + '-' + a + '0' + u;
+      const r = rnd();
+      let st = r < .38 ? 'vendido' : r < .5 ? 'reservado' : r < .54 ? 'bloqueado' : 'disponivel';
+      unidades[cod] = { status: st, cliente: st === 'vendido' || st === 'reservado' ? 'Cliente ' + cod : '', corretor: st === 'reservado' ? 'Marcos Lima' : '', ate: st === 'reservado' ? d(2) : '' };
+    }
+  });
+  // amarra as unidades que já têm processo
+  ['A-302', 'B-501', 'A-104', 'B-203', 'A-201'].forEach(c => { if (unidades[c] && id === 1) unidades[c] = { status: 'vendido', cliente: '', corretor: '' }; });
+  ['T1-702', 'T2-401', 'T1-303', 'T1-505'].forEach(c => { if (unidades[c] && id === 2) unidades[c] = { status: 'vendido', cliente: '', corretor: '' }; });
+  return { id, nome, cidade, torres, andares, porAndar, precoBase, entrega: id === 1 ? 'Dez/2027' : 'Jun/2028', unidades };
+}
+
+</script>
+<script>
+/* COR365 · plataforma do crédito imobiliário (demonstração, sem servidor) */
+'use strict';
+
+/* ---------- utilidades ---------- */
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const h = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const brl = v => (Number(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+const num = v => (Number(v) || 0).toLocaleString('pt-BR');
+const fdata = iso => iso ? iso.slice(0, 10).split('-').reverse().join('/') : '';
+const hoje = () => { const x = new Date(); return new Date(x.getTime() - x.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); };
+const addDias = (iso, n) => { const x = new Date(iso + 'T12:00'); x.setDate(x.getDate() + n); return x.toISOString().slice(0, 10); };
+const diasEntre = (a, b) => Math.round((new Date(b + 'T12:00') - new Date(a + 'T12:00')) / 864e5);
+const horaAgora = () => new Date().toTimeString().slice(0, 5);
+
+const ICONES = {
+  bank: 'M3 10h18M5 10v8M9 10v8M15 10v8M19 10v8M3 21h18M12 3l9 5H3z',
+  home: 'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z',
+  helmet: 'M4 17h16M5 17a7 7 0 0 1 14 0M10 10V6h4v4M3 20h18',
+  chart: 'M4 20V10M10 20V4M16 20v-7M22 20H2',
+  kanban: 'M4 4h4v16H4zM10 4h4v10h-4zM16 4h4v13h-4z',
+  users: 'M16 19v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1M9 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6M22 19v-1a4 4 0 0 0-3-3.9M16 4.1a3 3 0 0 1 0 5.8',
+  chat: 'M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12z',
+  calc: 'M6 3h12v18H6zM9 7h6M9 12h1M14 12h1M9 16h1M14 16h1',
+  doc: 'M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6',
+  gear: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19 12l2-1-1-3-2 .2-1.2-1.2L17 5l-3-1-1 2h-2L10 4 7 5l.2 2L6 8.2 4 8l-1 3 2 1v0l-2 1 1 3 2-.2L7.2 17 7 19l3 1 1-2h2l1 2 3-1-.2-2 1.2-1.2 2 .2 1-3z',
+  building: 'M4 21V5l8-2v18M12 8h8v13M8 8v.01M8 12v.01M8 16v.01M16 12v.01M16 16v.01M2 21h20',
+  tag: 'M20 12l-8 8-9-9V3h8zM7.5 7.5h.01',
+  key: 'M15 7a4 4 0 1 1-3.9 4.9L3 20v-3h3v-3h3l2.1-2.1A4 4 0 0 1 15 7z',
+  logout: 'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9',
+  chev: 'M9 6l6 6-6 6',
+  back: 'M15 6l-6 6 6 6',
+  plus: 'M12 5v14M5 12h14',
+  grid: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z',
+  funnel: 'M3 4h18l-7 8v6l-4 2v-8z',
+  swap: 'M7 7h13l-3-3M17 17H4l3 3',
+  ext: 'M14 4h6v6M20 4l-9 9M18 14v5H5V6h5',
+  menu: 'M4 6h16M4 12h16M4 18h16',
+  clock: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2',
+  alert: 'M12 9v4M12 17h.01M10.3 3.9L2 18a2 2 0 0 0 1.7 3h16.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z',
+  money: 'M3 6h18v12H3zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 9v.01M18 15v.01',
+  check: 'M5 12l5 5L20 7',
+  send: 'M22 2L11 13M22 2l-7 20-4-9-9-4z',
+  print: 'M6 9V3h12v6M6 18H4v-6h16v6h-2M8 14h8v7H8z',
+  spark: 'M12 3l2 5 5 2-5 2-2 5-2-5-5-2 5-2z'
+};
+const ic = (n, cls = 'i') => `<svg class="${cls}" viewBox="0 0 24 24"><path d="${ICONES[n] || ''}"/></svg>`;
+
+function logo(alt = 34, claro = false) {
+  const tx = claro ? '#ffffff' : '#0f2a44', bx = claro ? 'rgba(255,255,255,.12)' : '#0f2a44';
+  return `<svg viewBox="0 0 230 56" height="${alt}" role="img" aria-label="COR365" style="display:block">
+    <rect x="2" y="4" width="48" height="48" rx="13" fill="${bx}"/>
+    <path d="M12 28 L26 16 L40 28" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M15.5 34.5 a10.5 7 0 0 0 21 0" fill="none" stroke="#f07a28" stroke-width="5" stroke-linecap="round"/>
+    <text x="62" y="41" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="32" font-weight="800" letter-spacing="0.5" fill="${tx}">COR<tspan fill="#f07a28">365</tspan></text></svg>`;
+}
+
+/* ---------- base e sessão ---------- */
+let DB, SESS = null;
+function load() {
+  try { const s = localStorage.getItem('cor365_db'); DB = s ? JSON.parse(s) : null; } catch (e) { DB = null; }
+  if (!DB || DB.versao !== 1) { DB = seedDB(); save(); }
+  try { SESS = JSON.parse(localStorage.getItem('cor365_sessao') || 'null'); } catch (e) { SESS = null; }
+}
+function save() { try { localStorage.setItem('cor365_db', JSON.stringify(DB)); } catch (e) { } }
+function setSess(s) { SESS = s; try { s ? localStorage.setItem('cor365_sessao', JSON.stringify(s)) : localStorage.removeItem('cor365_sessao'); } catch (e) { } }
+function aplicaMarca() { document.documentElement.style.setProperty('--accent', DB.config.cor || '#f07a28'); }
+
+/* ---------- regras ---------- */
+const prazo = p => addDias(p.entrouFase, FASES[p.fase].sla);
+const atrasado = p => hoje() > prazo(p);
+const pendencias = p => DOCS_PADRAO.filter(d => !p.docs[d]);
+const proc = id => DB.processos.find(p => p.id === +id);
+function moverFase(p, nova, nota) {
+  if (nova < 0 || nova >= FASES.length || nova === p.fase) return;
+  const de = FASES[p.fase].n;
+  p.fase = nova; p.entrouFase = hoje();
+  p.historico.push({ data: hoje(), txt: `${nota || 'Moveu'}: ${de} → ${FASES[nova].n}`, por: SESS.nome });
+  save();
+}
+function novoProcesso(v) {
+  const id = ++DB.seq.processo; const docs = {}; DOCS_PADRAO.forEach(d => docs[d] = false);
+  const p = {
+    id, cliente: v.cliente, cpf: v.cpf || '', telefone: v.telefone || '', banco: v.banco || 'Caixa', modalidade: v.modalidade || 'MCMV Faixa 2',
+    valorImovel: +v.valorImovel || 0, financiamento: +v.financiamento || 0, renda: +v.renda || 0, fase: 0, entrouFase: hoje(),
+    responsavel: v.responsavel || RESPONSAVEIS[id % RESPONSAVEIS.length], corretor: v.corretor || '', imobiliaria: v.corretor ? 'Imobiliária Horizonte' : '',
+    empreendimento: v.empreendimento || '', unidade: v.unidade || '', docs, criado: hoje(),
+    historico: [{ data: hoje(), txt: v.origem || 'Processo aberto', por: SESS.nome }]
+  };
+  DB.processos.push(p); save(); return p;
+}
+const precoUnidade = (e, cod) => {
+  const andar = +cod.split('-')[1].slice(0, -2) || 1;
+  const camp = DB.campanhas.find(c => c.empreendimento === e.id && c.status === 'Ativa' && c.desconto > 0);
+  const base = e.precoBase * (1 + 0.008 * (andar - 1));
+  return { cheio: base, final: camp ? base * (1 - camp.desconto / 100) : base, camp };
+};
+
+/* ---------- perfis ---------- */
+const PERFIS = {
+  banco: { nome: 'Correspondente bancário', sub: 'Processos, crédito e CRM', ico: 'bank',
+    menu: [['painel', 'Painel', 'chart'], ['esteira', 'Esteira de processos', 'kanban'], ['crm', 'CRM de vendas', 'funnel'], ['atendimento', 'Atendimento', 'chat'], ['renda', 'Apurador de renda', 'calc'], ['formularios', 'Formulários dos bancos', 'doc'], ['config', 'Configurações', 'gear']] },
+  imob: { nome: 'Imobiliária e corretor', sub: 'Imóveis, propostas e reservas', ico: 'home',
+    menu: [['painel', 'Painel', 'chart'], ['clientes', 'Meus clientes', 'users'], ['imoveis', 'Imóveis', 'home'], ['empreendimentos', 'Empreendimentos', 'building'], ['propostas', 'Propostas', 'doc'], ['reservas', 'Reservas', 'key']] },
+  const: { nome: 'Construtora', sub: 'Empreendimentos e campanhas', ico: 'helmet',
+    menu: [['painel', 'Painel', 'chart'], ['empreendimentos', 'Espelho de vendas', 'grid'], ['reservas', 'Reservas', 'key'], ['campanhas', 'Campanhas', 'tag'], ['repasse', 'Repasse', 'swap']] }
+};
+
+/* ---------- modal e aviso ---------- */
+function toast(t) { const d = document.createElement('div'); d.className = 'toast'; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 2600); }
+function closeModal() { $$('.modal-bg').forEach(m => m.remove()); }
+function modal(titulo, corpo, botoes = [], wide = false) {
+  closeModal();
+  const bg = document.createElement('div'); bg.className = 'modal-bg';
+  bg.innerHTML = `<div class="modal ${wide ? 'wide' : ''}"><div class="mh"><h3>${h(titulo)}</h3><button aria-label="Fechar">×</button></div><div class="mb">${corpo}</div>${botoes.length ? '<div class="mf"></div>' : ''}</div>`;
+  bg.addEventListener('mousedown', e => { if (e.target === bg) closeModal(); });
+  $('.mh button', bg).onclick = closeModal;
+  const mf = $('.mf', bg);
+  botoes.forEach(b => { const el = document.createElement('button'); el.className = 'btn ' + (b.cls || ''); el.innerHTML = b.t; el.onclick = () => b.fn(bg); mf.appendChild(el); });
+  document.body.appendChild(bg);
+  const f = $('input,select,textarea', bg); if (f) f.focus();
+  return bg;
+}
+function campo(f) {
+  const v = f.v ?? '';
+  const req = f.req ? ' <span class="req">*</span>' : '';
+  let inp;
+  if (f.t === 'select') inp = `<select class="inp" name="${f.k}">${f.o.map(o => { const [val, lab] = Array.isArray(o) ? o : [o, o]; return `<option value="${h(val)}" ${String(val) === String(v) ? 'selected' : ''}>${h(lab)}</option>`; }).join('')}</select>`;
+  else if (f.t === 'textarea') inp = `<textarea class="inp" name="${f.k}">${h(v)}</textarea>`;
+  else inp = `<input class="inp" name="${f.k}" type="${f.t || 'text'}" value="${h(v)}" ${f.ph ? `placeholder="${h(f.ph)}"` : ''} ${f.t === 'number' ? 'step="any" min="0"' : ''}>`;
+  return `<div class="field"><label>${h(f.l)}${req}</label>${inp}</div>`;
+}
+function formModal(titulo, campos, onSave, extra = []) {
+  let html = '', buf = [];
+  campos.forEach(f => { if (f.half) { buf.push(campo(f)); if (buf.length === 2) { html += `<div class="frow">${buf.join('')}</div>`; buf = []; } } else { if (buf.length) { html += `<div class="frow">${buf.join('')}</div>`; buf = []; } html += campo(f); } });
+  if (buf.length) html += `<div class="frow">${buf.join('')}</div>`;
+  html += '<div class="erro"></div>';
+  return modal(titulo, html, [...extra, { t: 'Cancelar', cls: 'ghost', fn: closeModal }, { t: 'Salvar', fn: bg => {
+    const v = {}; campos.forEach(f => { const el = $(`[name="${f.k}"]`, bg); v[f.k] = f.t === 'number' ? (el.value === '' ? '' : +el.value) : el.value.trim(); });
+    const falta = campos.find(f => f.req && (v[f.k] === '' || v[f.k] == null));
+    if (falta) { $('.erro', bg).textContent = 'Preencha: ' + falta.l; return; }
+    if (onSave(v) !== false) closeModal();
+  } }]);
+}
+
+/* ---------- roteador ---------- */
+const app = document.getElementById('root');
+function go(r) { location.hash = '#/' + r; }
+function route() {
+  closeModal();
+  const p = location.hash.replace(/^#\/?/, '').split('/');
+  if (p[0] === 'entrar' && PERFIS[p[1]]) return telaLogin(p[1]);
+  if (p[0] === 'app') { if (!SESS) return go(''); return telaApp(p[1] || 'painel', p[2]); }
+  if (SESS && !p[0]) return go('app/painel');
+  telaPerfis();
+}
+window.addEventListener('hashchange', route);
+
+/* ---------- escolha de perfil e login ---------- */
+function linksRodape() {
+  return `<div class="gate-links"><a href="#" data-wa="comercial">Falar com o comercial ${ic('ext')}</a><a href="#" data-wa="suporte">Suporte no WhatsApp ${ic('ext')}</a></div>`;
+}
+function ligaWhats(el) {
+  $$('[data-wa]', el).forEach(a => a.onclick = e => {
+    e.preventDefault();
+    const n = (DB.config.whatsapp || '').replace(/\D/g, '');
+    if (!n) return toast('Cadastre o número do WhatsApp em Configurações');
+    window.open('https://wa.me/' + n + '?text=' + encodeURIComponent(a.dataset.wa === 'comercial' ? 'Olá! Quero conhecer o COR365.' : 'Olá! Preciso de suporte no COR365.'), '_blank', 'noopener');
+  });
+}
+function telaPerfis() {
+  document.title = 'Bem-vindo | COR365';
+  app.innerHTML = `<div class="gate dots"><div class="gate-box">
+    ${logo(46)}<div class="kicker">Escolha o perfil para continuar.</div><h1>Acessar</h1>
+    ${Object.entries(PERFIS).map(([k, p]) => `<button class="perfil" data-p="${k}"><span class="ico">${ic(p.ico)}</span><span><b>${p.nome}</b><small>${p.sub}</small></span><span class="chev">${ic('chev')}</span></button>`).join('')}
+    ${linksRodape()}</div></div>`;
+  $$('.perfil', app).forEach(b => b.onclick = () => go('entrar/' + b.dataset.p));
+  ligaWhats(app);
+}
+function telaLogin(perfil) {
+  const pf = PERFIS[perfil]; const demo = DB.usuarios.find(u => u.perfil === perfil);
+  document.title = 'Acessar | COR365';
+  app.innerHTML = `<div class="gate dots"><div class="gate-box">
+    <button class="back" id="volta">${ic('back')} Trocar perfil</button>
+    ${logo(46)}<div class="kicker">${pf.nome}</div><h1>Acessar</h1>
+    <div class="demo-hint">Demonstração: <b>${h(demo.email)}</b> · senha <b>${h(demo.senha)}</b></div>
+    <form id="fl" autocomplete="on">
+      <div class="field"><label>E-mail <span class="req">*</span></label><input class="inp" name="email" type="email" value="${h(demo.email)}" required></div>
+      <div class="field"><label>Senha <span class="req">*</span></label><input class="inp" name="senha" type="password" required></div>
+      <div class="erro" id="err"></div>
+      <a href="#" id="esq" style="font-size:13px">Esqueci minha senha</a>
+      <button class="btn full" style="margin-top:16px">Acessar</button>
+    </form>${linksRodape()}</div></div>`;
+  $('#volta').onclick = () => go('');
+  $('#esq').onclick = e => { e.preventDefault(); toast('Enviamos o link de troca de senha para o seu e-mail'); };
+  $('[name=senha]').focus();
+  ligaWhats(app);
+  $('#fl').onsubmit = e => {
+    e.preventDefault();
+    const f = new FormData(e.target), em = String(f.get('email')).trim().toLowerCase(), se = String(f.get('senha'));
+    const u = DB.usuarios.find(x => x.email === em && x.senha === se && x.perfil === perfil);
+    if (!u) { $('#err').textContent = 'E-mail ou senha inválidos para este perfil.'; return; }
+    setSess({ email: u.email, nome: u.nome, perfil });
+    go('app/painel');
+  };
+}
+
+/* ---------- casca do app ---------- */
+function telaApp(view, arg) {
+  const pf = PERFIS[SESS.perfil];
+  const fn = (VIEWS[SESS.perfil] || {})[view] || VIEWS.comum[view];
+  if (!fn) return go('app/painel');
+  const r = fn(arg) || {};
+  document.title = (r.t || pf.nome) + ' | COR365';
+  const badge = k => {
+    if (SESS.perfil !== 'banco') return 0;
+    if (k === 'esteira') return DB.processos.filter(atrasado).length;
+    if (k === 'atendimento') return DB.conversas.reduce((s, c) => s + c.naoLidas, 0);
+    return 0;
+  };
+  const ativo = { processo: SESS.perfil === 'banco' ? 'esteira' : SESS.perfil === 'imob' ? 'clientes' : 'repasse', espelho: 'empreendimentos' }[view] || view;
+  app.innerHTML = `<div class="app">
+    <aside class="side" id="side"><div class="brand">${logo(30, true)}<div class="who">${pf.nome}</div></div>
+      <nav>${pf.menu.map(([k, n, i]) => { const b = badge(k); return `<a href="#/app/${k}" class="${k === ativo ? 'on' : ''}">${ic(i)}${n}${b ? `<span class="badge">${b}</span>` : ''}</a>`; }).join('')}</nav>
+      <div class="foot"><b>${h(SESS.nome)}</b><span class="muted" style="color:#8fa5bb">${h(SESS.email)}</span><br><button id="sair">${ic('logout')} Sair</button></div></aside>
+    <div class="main"><header class="top"><button class="menu-btn" id="mb" aria-label="Menu">${ic('menu')}</button>
+      <div><h1>${h(r.t || '')}</h1>${r.s ? `<div class="sub">${r.s}</div>` : ''}</div><div class="actions" id="acts">${r.a || ''}</div></header>
+      <section class="view" id="view">${r.html || ''}</section></div></div>`;
+  $('#sair').onclick = () => { setSess(null); go(''); };
+  $('#mb').onclick = () => $('#side').classList.toggle('open');
+  $$('#side nav a').forEach(a => a.addEventListener('click', () => $('#side').classList.remove('open')));
+  if (r.after) r.after($('#view'));
+  window.scrollTo(0, 0);
+}
+const rerender = () => route();
+
+/* ---------- pedaços reaproveitados ---------- */
+const kpi = (lab, val, foot, icn, alerta) => `<div class="card kpi ${alerta ? 'alert' : ''}"><div class="lab">${ic(icn)}${lab}</div><div class="val">${val}</div>${foot ? `<div class="foot">${foot}</div>` : ''}</div>`;
+const tagFase = p => `<span class="tag ${p.fase >= 6 ? 'ok' : p.fase >= 3 ? 'info' : ''}">${FASES[p.fase].n}</span>`;
+const barra = (pct, cor) => `<div class="track" style="height:8px;background:#eef1f5;border-radius:99px;overflow:hidden;min-width:90px"><div style="height:100%;width:${Math.max(0, Math.min(100, pct))}%;background:${cor || 'var(--navy2)'};border-radius:99px"></div></div>`;
+const progresso = p => Math.round((p.fase + 1) / FASES.length * 100);
+function steps(p) {
+  return `<div class="steps">${FASES.map((f, i) => `<div class="step ${i < p.fase ? 'done' : i === p.fase ? 'now' : ''}"><div class="bar"></div>${f.n}</div>`).join('')}</div>`;
+}
+function kanbanDnD(root, onDrop) {
+  $$('.kc', root).forEach(c => {
+    c.draggable = true;
+    c.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', c.dataset.id); c.classList.add('dragging'); });
+    c.addEventListener('dragend', () => c.classList.remove('dragging'));
+  });
+  $$('.col', root).forEach(col => {
+    col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('over'); });
+    col.addEventListener('dragleave', () => col.classList.remove('over'));
+    col.addEventListener('drop', e => { e.preventDefault(); col.classList.remove('over'); const id = +e.dataTransfer.getData('text/plain'); if (id) onDrop(id, +col.dataset.col); });
+  });
+}
+function camposProcesso(v = {}) {
+  return [
+    { k: 'cliente', l: 'Cliente', req: true, v: v.cliente },
+    { k: 'cpf', l: 'CPF', v: v.cpf, half: true, ph: '000.000.000-00' }, { k: 'telefone', l: 'Telefone', v: v.telefone, half: true, ph: '(67) 90000-0000' },
+    { k: 'banco', l: 'Banco', t: 'select', o: BANCOS, v: v.banco, half: true }, { k: 'modalidade', l: 'Modalidade', t: 'select', o: ['MCMV Faixa 1', 'MCMV Faixa 2', 'MCMV Faixa 3', 'Pró-Cotista', 'SBPE'], v: v.modalidade, half: true },
+    { k: 'valorImovel', l: 'Valor do imóvel (R$)', t: 'number', v: v.valorImovel, half: true }, { k: 'financiamento', l: 'Valor financiado (R$)', t: 'number', v: v.financiamento, half: true },
+    { k: 'renda', l: 'Renda familiar (R$)', t: 'number', v: v.renda, half: true }, { k: 'responsavel', l: 'Responsável', t: 'select', o: RESPONSAVEIS, v: v.responsavel, half: true },
+    { k: 'corretor', l: 'Corretor', v: v.corretor, half: true }, { k: 'empreendimento', l: 'Empreendimento', t: 'select', o: ['', ...DB.empreendimentos.map(e => e.nome)], v: v.empreendimento, half: true },
+    { k: 'unidade', l: 'Unidade', v: v.unidade, half: true, ph: 'A-302' }
+  ];
+}
+function listaReservas(todas) {
+  const rows = [];
+  DB.empreendimentos.forEach(e => Object.entries(e.unidades).forEach(([cod, u]) => {
+    if (u.status === 'reservado' && (todas || u.corretor === SESS.nome)) rows.push({ e, cod, u });
+  }));
+  rows.sort((a, b) => (a.u.ate || '').localeCompare(b.u.ate || ''));
+  return rows;
+}
+
+/* =================================================================
+   TELAS
+   ================================================================= */
+const FILT = { banco: '', resp: '', q: '' };
+let CONV_SEL = null;
+
+const VIEWS = {
+  /* ---------- telas comuns aos perfis ---------- */
+  comum: {
+    processo(id) {
+      const p = proc(id); if (!p) return { t: 'Processo não encontrado', html: '<div class="empty">Processo não encontrado.</div>' };
+      const pode = SESS.perfil === 'banco';
+      const pend = pendencias(p), late = atrasado(p);
+      const voltar = SESS.perfil === 'banco' ? 'esteira' : SESS.perfil === 'imob' ? 'clientes' : 'repasse';
+      return {
+        t: p.cliente, s: `Processo #${p.id} · ${h(p.banco)} · ${h(p.modalidade)}`,
+        a: `<a class="btn ghost" href="#/app/${voltar}">${ic('back')} Voltar</a>` + (pode ? `<button class="btn ghost" id="ed">Editar</button><button class="btn ghost" id="vt" ${p.fase === 0 ? 'disabled' : ''}>Voltar fase</button><button class="btn accent" id="av" ${p.fase === FASES.length - 1 ? 'disabled' : ''}>Avançar fase ${ic('chev')}</button>` : ''),
+        html: `<div class="card">${steps(p)}<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">${tagFase(p)}
+            <span class="tag ${late ? 'bad' : 'ok'}">${ic('clock')} Prazo ${fdata(prazo(p))}${late ? ' · atrasado' : ''}</span>
+            <span class="tag">Responsável: ${h(p.responsavel)}</span>${pend.length ? `<span class="tag warn">${pend.length} pendência(s)</span>` : '<span class="tag ok">Documentação completa</span>'}</div></div>
+          <div class="grid g2 mt">
+            <div class="card"><h3>Dados do processo</h3><dl class="dl">
+              <dt>Cliente</dt><dd>${h(p.cliente)}</dd><dt>CPF</dt><dd>${h(p.cpf) || '—'}</dd><dt>Telefone</dt><dd>${h(p.telefone) || '—'}</dd>
+              <dt>Banco</dt><dd>${h(p.banco)}</dd><dt>Modalidade</dt><dd>${h(p.modalidade)}</dd>
+              <dt>Valor do imóvel</dt><dd>${brl(p.valorImovel)}</dd><dt>Financiamento</dt><dd>${brl(p.financiamento)}</dd>
+              <dt>Entrada</dt><dd>${brl(p.valorImovel - p.financiamento)}</dd><dt>Renda familiar</dt><dd>${brl(p.renda)}</dd>
+              <dt>Comprometimento</dt><dd>${p.renda ? Math.round(parcelaEstimada(p.financiamento) / p.renda * 100) + '% da renda' : '—'}</dd>
+              <dt>Corretor</dt><dd>${h(p.corretor) || '—'} ${p.imobiliaria ? '<span class="muted">· ' + h(p.imobiliaria) + '</span>' : ''}</dd>
+              <dt>Empreendimento</dt><dd>${h(p.empreendimento) || '—'} ${p.unidade ? '· ' + h(p.unidade) : ''}</dd>
+            </dl></div>
+            <div class="card"><div class="head"><h3>Documentos</h3><span class="r muted">${DOCS_PADRAO.length - pend.length}/${DOCS_PADRAO.length}</span></div>
+              <div class="checklist">${DOCS_PADRAO.map(d => `<label><input type="checkbox" data-doc="${h(d)}" ${p.docs[d] ? 'checked' : ''} ${pode ? '' : 'disabled'}> ${h(d)}</label>`).join('')}</div></div>
+          </div>
+          <div class="card mt"><div class="head"><h3>Histórico</h3>${pode || SESS.perfil === 'imob' ? '<button class="btn ghost sm r" id="nota">' + ic('plus') + ' Observação</button>' : ''}</div>
+            <ul class="hist">${p.historico.slice().reverse().map(x => `<li>${h(x.txt)}<small>${fdata(x.data)} · ${h(x.por)}</small></li>`).join('')}</ul></div>`,
+        after(v) {
+          $$('[data-doc]', v).forEach(c => c.onchange = () => { p.docs[c.dataset.doc] = c.checked; p.historico.push({ data: hoje(), txt: (c.checked ? 'Documento recebido: ' : 'Documento desmarcado: ') + c.dataset.doc, por: SESS.nome }); save(); rerender(); });
+          const av = $('#av'), vt = $('#vt'), ed = $('#ed'), nt = $('#nota');
+          if (av) av.onclick = () => { moverFase(p, p.fase + 1, 'Avançou'); toast('Processo foi para ' + FASES[p.fase].n); rerender(); };
+          if (vt) vt.onclick = () => { moverFase(p, p.fase - 1, 'Voltou'); rerender(); };
+          if (ed) ed.onclick = () => formModal('Editar processo', camposProcesso(p), vals => { Object.assign(p, vals); p.historico.push({ data: hoje(), txt: 'Dados do processo editados', por: SESS.nome }); save(); rerender(); });
+          if (nt) nt.onclick = () => formModal('Nova observação', [{ k: 'txt', l: 'Observação', t: 'textarea', req: true }], vals => { p.historico.push({ data: hoje(), txt: vals.txt, por: SESS.nome }); save(); rerender(); });
+        }
+      };
+    },
+    espelho(id) {
+      const e = DB.empreendimentos.find(x => x.id === +id); if (!e) return go('app/empreendimentos');
+      const cont = { disponivel: 0, reservado: 0, vendido: 0, bloqueado: 0 };
+      Object.values(e.unidades).forEach(u => cont[u.status]++);
+      const camp = DB.campanhas.find(c => c.empreendimento === e.id && c.status === 'Ativa');
+      const leg = [['disponivel', 'Disponível', 'var(--ok-soft)'], ['reservado', 'Reservado', 'var(--warn-soft)'], ['vendido', 'Vendido', '#e3e8ee'], ['bloqueado', 'Bloqueado', 'var(--bad-soft)']];
+      return {
+        t: e.nome, s: `${h(e.cidade)} · entrega ${h(e.entrega)} · ${Object.keys(e.unidades).length} unidades`,
+        a: `<a class="btn ghost" href="#/app/empreendimentos">${ic('back')} Voltar</a>`,
+        html: `${camp ? `<div class="card" style="border-color:var(--accent);background:var(--accent-soft);margin-bottom:16px;padding:12px 16px">${ic('tag')} <b>Campanha ativa:</b> ${h(camp.nome)}${camp.desconto ? ` · ${camp.desconto}% de desconto já aplicado nos preços` : ''} · até ${fdata(camp.fim)}</div>` : ''}
+          <div class="legend">${leg.map(([k, n, c]) => `<span><i style="background:${c}"></i>${n} <b>${cont[k]}</b></span>`).join('')}</div>
+          ${e.torres.map(t => `<div class="card tower"><h4>Torre ${h(t)}</h4><div class="floors" style="overflow-x:auto">${Array.from({ length: e.andares }, (_, i) => e.andares - i).map(a =>
+            `<div class="floor"><span class="fl">${a}º andar</span>${Array.from({ length: e.porAndar }, (_, j) => { const cod = `${t}-${a}0${j + 1}`, u = e.unidades[cod]; return `<button class="un s-${u.status}" data-u="${cod}">${a}0${j + 1}<small>${u.status === 'disponivel' ? brl(precoUnidade(e, cod).final).replace('R$', '').trim() : u.status}</small></button>`; }).join('')}</div>`).join('')}</div></div>`).join('')}`,
+        after(v) { $$('[data-u]', v).forEach(b => b.onclick = () => abrirUnidade(e, b.dataset.u)); }
+      };
+    }
+  },
+
+  /* ---------- CORRESPONDENTE BANCÁRIO ---------- */
+  banco: {
+    painel() {
+      const ps = DB.processos, late = ps.filter(atrasado);
+      const aprov = ps.filter(p => p.fase >= 3).length, vol = ps.reduce((s, p) => s + p.financiamento, 0);
+      const max = Math.max(1, ...FASES.map((_, i) => ps.filter(p => p.fase === i).length));
+      const prox = ps.slice().sort((a, b) => prazo(a).localeCompare(prazo(b))).slice(0, 7);
+      return {
+        t: 'Painel', s: `${h(DB.config.escritorio)} · visão geral da operação`,
+        a: `<button class="btn accent" id="np">${ic('plus')} Novo processo</button>`,
+        html: `<div class="grid g4">${kpi('Processos ativos', ps.length, `${DB.leads.filter(l => l.etapa < 4).length} leads no funil`, 'kanban')}
+            ${kpi('Fora do prazo', late.length, 'passaram do SLA da fase', 'alert', late.length > 0)}
+            ${kpi('Crédito aprovado', aprov, 'da engenharia em diante', 'check')}
+            ${kpi('Volume em financiamento', brl(vol), 'soma dos processos', 'money')}</div>
+          <div class="grid g2 mt">
+            <div class="card"><h3>Processos por fase</h3><div class="bars">${FASES.map((f, i) => { const n = ps.filter(p => p.fase === i).length; return `<div class="row"><span>${f.n}</span><div class="track"><div class="fill" style="width:${n / max * 100}%"></div></div><span class="n">${n}</span></div>`; }).join('')}</div></div>
+            <div class="card"><div class="head"><h3>Prazos mais próximos</h3><a class="r" href="#/app/esteira" style="font-size:13px">Ver esteira</a></div>
+              <div class="tbl-wrap" style="border:0"><table><tbody>${prox.map(p => `<tr class="click" data-p="${p.id}"><td><b>${h(p.cliente)}</b><br><span class="muted" style="font-size:12px">${FASES[p.fase].n} · ${h(p.responsavel)}</span></td><td class="num"><span class="tag ${atrasado(p) ? 'bad' : diasEntre(hoje(), prazo(p)) <= 1 ? 'warn' : 'ok'}">${fdata(prazo(p))}</span></td></tr>`).join('')}</tbody></table></div></div>
+          </div>
+          <div class="grid g3 mt">${BANCOS.slice(0, 3).map(b => { const pb = ps.filter(p => p.banco === b); return `<div class="card kpi"><div class="lab">${ic('bank')}${b}</div><div class="val">${pb.length}</div><div class="foot">${brl(pb.reduce((s, p) => s + p.financiamento, 0))} em financiamento</div></div>`; }).join('')}</div>`,
+        after(v) { $$('[data-p]', v).forEach(r => r.onclick = () => go('app/processo/' + r.dataset.p)); $('#np').onclick = () => formModal('Novo processo', camposProcesso(), vals => { const p = novoProcesso(vals); go('app/processo/' + p.id); }); }
+      };
+    },
+    esteira() {
+      const lista = DB.processos.filter(p => (!FILT.banco || p.banco === FILT.banco) && (!FILT.resp || p.responsavel === FILT.resp) && (!FILT.q || (p.cliente + p.cpf + p.id).toLowerCase().includes(FILT.q.toLowerCase())));
+      return {
+        t: 'Esteira de processos', s: 'Cada processo tem uma fase, um responsável e um prazo. Arraste o cartão para mudar de fase.',
+        a: `<button class="btn accent" id="np">${ic('plus')} Novo processo</button>`,
+        html: `<div class="toolbar"><input class="inp grow" id="fq" placeholder="Buscar cliente, CPF ou número" value="${h(FILT.q)}">
+            <select class="inp" id="fb"><option value="">Todos os bancos</option>${BANCOS.map(b => `<option ${b === FILT.banco ? 'selected' : ''}>${b}</option>`).join('')}</select>
+            <select class="inp" id="fr"><option value="">Todos os responsáveis</option>${RESPONSAVEIS.map(b => `<option ${b === FILT.resp ? 'selected' : ''}>${b}</option>`).join('')}</select></div>
+          <div class="kanban">${FASES.map((f, i) => { const cs = lista.filter(p => p.fase === i); return `<div class="col" data-col="${i}"><div class="col-h">${f.n}<span class="cnt">${cs.length}</span><span class="sla">SLA ${f.sla}d</span></div>
+            ${cs.map(p => { const pend = pendencias(p).length, late = atrasado(p); return `<div class="kc ${late ? 'late' : ''}" data-id="${p.id}"><b>${h(p.cliente)}</b>
+              <div class="line"><span>#${p.id} · ${h(p.banco)}</span><span>${brl(p.financiamento)}</span></div>
+              <div class="meta"><span class="tag ${late ? 'bad' : 'ok'}">${ic('clock')} ${fdata(prazo(p)).slice(0, 5)}</span>${pend ? `<span class="tag warn">${pend} pend.</span>` : ''}<span class="tag">${h(p.responsavel.split(' ')[0])}</span></div></div>`; }).join('')}</div>`; }).join('')}</div>`,
+        after(v) {
+          $('#fq').oninput = e => { FILT.q = e.target.value; clearTimeout(window._fq); window._fq = setTimeout(() => { rerender(); const i = $('#fq'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }, 250); };
+          $('#fb').onchange = e => { FILT.banco = e.target.value; rerender(); };
+          $('#fr').onchange = e => { FILT.resp = e.target.value; rerender(); };
+          $$('.kc', v).forEach(c => c.onclick = () => go('app/processo/' + c.dataset.id));
+          kanbanDnD(v, (id, col) => { const p = proc(id); if (p && p.fase !== col) { moverFase(p, col); toast(`${p.cliente} → ${FASES[col].n}`); rerender(); } });
+          $('#np').onclick = () => formModal('Novo processo', camposProcesso(), vals => { novoProcesso(vals); toast('Processo criado em Cadastro'); rerender(); });
+        }
+      };
+    },
+    crm() {
+      return {
+        t: 'CRM de vendas', s: 'Funil de leads ligado ao processo de crédito. Arraste para mudar de etapa.',
+        a: `<button class="btn accent" id="nl">${ic('plus')} Novo lead</button>`,
+        html: `<div class="grid g4" style="margin-bottom:16px">${kpi('Leads no funil', DB.leads.filter(l => l.etapa < 4).length, '', 'funnel')}${kpi('Convertidos', DB.leads.filter(l => l.etapa === 4).length, 'viraram processo', 'check')}${kpi('Taxa de conversão', Math.round(DB.leads.filter(l => l.etapa === 4).length / Math.max(1, DB.leads.filter(l => l.etapa >= 4).length) * 100) + '%', 'convertidos ÷ encerrados', 'chart')}${kpi('Potencial no funil', brl(DB.leads.filter(l => l.etapa < 4).reduce((s, l) => s + (+l.valor || 0), 0)), 'valor dos imóveis', 'money')}</div>
+          <div class="kanban">${ETAPAS_CRM.map((et, i) => { const ls = DB.leads.filter(l => l.etapa === i); return `<div class="col" data-col="${i}"><div class="col-h">${et}<span class="cnt">${ls.length}</span></div>
+            ${ls.map(l => `<div class="kc" data-id="${l.id}"><b>${h(l.nome)}</b><div class="line"><span>${h(l.telefone)}</span></div><div class="meta"><span class="tag info">${h(l.origem)}</span><span class="tag">${brl(l.valor)}</span></div></div>`).join('')}</div>`; }).join('')}</div>`,
+        after(v) {
+          const campos = (l = {}) => [{ k: 'nome', l: 'Nome', req: true, v: l.nome }, { k: 'telefone', l: 'Telefone', v: l.telefone, half: true }, { k: 'origem', l: 'Origem', t: 'select', o: ['Site', 'Instagram', 'WhatsApp', 'Indicação de corretor', 'Feirão', 'Outro'], v: l.origem, half: true }, { k: 'valor', l: 'Valor do imóvel desejado (R$)', t: 'number', v: l.valor, half: true }, { k: 'etapa', l: 'Etapa', t: 'select', o: ETAPAS_CRM.map((e, i) => [i, e]), v: l.etapa ?? 0, half: true }];
+          $('#nl').onclick = () => formModal('Novo lead', campos(), vals => { DB.leads.push({ id: ++DB.seq.lead, ...vals, etapa: +vals.etapa, criado: hoje() }); save(); rerender(); });
+          $$('.kc', v).forEach(c => c.onclick = () => {
+            const l = DB.leads.find(x => x.id === +c.dataset.id);
+            formModal('Lead · ' + l.nome, campos(l), vals => { Object.assign(l, vals, { etapa: +vals.etapa }); save(); rerender(); }, [
+              { t: ic('swap') + ' Converter em processo', cls: 'accent', fn: () => { const p = novoProcesso({ cliente: l.nome, telefone: l.telefone, valorImovel: l.valor, financiamento: Math.round((+l.valor || 0) * .8), origem: 'Convertido do CRM (lead ' + l.origem + ')' }); l.etapa = 4; save(); toast('Processo #' + p.id + ' aberto'); go('app/processo/' + p.id); } },
+              { t: 'Excluir', cls: 'danger', fn: () => { if (confirm('Excluir este lead?')) { DB.leads = DB.leads.filter(x => x !== l); save(); closeModal(); rerender(); } } }
+            ]);
+          });
+          kanbanDnD(v, (id, col) => { const l = DB.leads.find(x => x.id === id); if (l) { l.etapa = col; save(); rerender(); } });
+        }
+      };
+    },
+    atendimento() {
+      if (!CONV_SEL || !DB.conversas.find(c => c.id === CONV_SEL)) CONV_SEL = DB.conversas[0]?.id;
+      const c = DB.conversas.find(x => x.id === CONV_SEL);
+      if (c) c.naoLidas = 0; save();
+      const p = c && c.processo ? proc(c.processo) : null;
+      const respostas = {
+        'Documentos': 'Para começar precisamos de: ' + DOCS_PADRAO.slice(0, 6).join(', ') + '.',
+        'Prazo da análise': 'A análise de crédito leva em média 5 dias úteis depois da documentação completa.',
+        'Status do processo': p ? `Seu processo está na fase ${FASES[p.fase].n}. Previsão desta etapa: ${fdata(prazo(p))}.` : 'Ainda não encontrei um processo no seu nome. Vou abrir um para você.',
+        'Simulação': 'Me passa sua renda familiar e o valor do imóvel que eu faço a simulação na hora.'
+      };
+      return {
+        t: 'Atendimento', s: 'Conversas do WhatsApp compartilhadas pelo time, com histórico ligado ao cliente e ao processo.',
+        a: `<button class="btn ghost" id="nc">${ic('plus')} Nova conversa</button>`,
+        html: `<div class="chat"><div class="list">${DB.conversas.map(x => `<div class="conv ${x.id === CONV_SEL ? 'on' : ''}" data-c="${x.id}"><b>${h(x.cliente)}${x.naoLidas ? `<span class="tag acc">${x.naoLidas}</span>` : `<span class="muted" style="font-weight:400;font-size:12px">${h(x.msgs.at(-1)?.hora || '')}</span>`}</b><small>${h(x.msgs.at(-1)?.txt || '')}</small></div>`).join('')}</div>
+          ${c ? `<div class="pane"><div class="ph"><div><b>${h(c.cliente)}</b><div class="muted" style="font-size:12px">${h(c.telefone)}</div></div><span style="margin-left:auto"></span>
+            ${p ? `<a class="btn ghost sm" href="#/app/processo/${p.id}">Processo #${p.id} · ${FASES[p.fase].n}</a>` : `<button class="btn ghost sm" id="vl">Criar lead</button>`}</div>
+            <div class="msgs" id="msgs">${c.msgs.map(m => `<div class="msg ${m.de}">${m.de === 'bot' ? '<b style="font-size:11px;color:var(--info)">Robô</b><br>' : ''}${h(m.txt)}<small>${h(m.hora)}</small></div>`).join('')}</div>
+            <div class="quick">${Object.keys(respostas).map(k => `<button data-q="${h(k)}">${ic('spark')} ${h(k)}</button>`).join('')}</div>
+            <form class="comp" id="fm"><input class="inp" id="tx" placeholder="Escreva uma mensagem" autocomplete="off"><button class="btn">${ic('send')}</button></form></div>` : '<div class="empty">Nenhuma conversa.</div>'}</div>`,
+        after(v) {
+          $$('[data-c]', v).forEach(el => el.onclick = () => { CONV_SEL = +el.dataset.c; rerender(); });
+          const m = $('#msgs'); if (m) m.scrollTop = m.scrollHeight;
+          const fm = $('#fm');
+          if (fm) fm.onsubmit = e => { e.preventDefault(); const t = $('#tx').value.trim(); if (!t) return; c.msgs.push({ de: 'eu', txt: t, hora: horaAgora() }); save(); rerender(); $('#tx').focus(); };
+          $$('[data-q]', v).forEach(b => b.onclick = () => { c.msgs.push({ de: 'bot', txt: respostas[b.dataset.q], hora: horaAgora() }); save(); rerender(); });
+          const vl = $('#vl'); if (vl) vl.onclick = () => { DB.leads.push({ id: ++DB.seq.lead, nome: c.cliente, telefone: c.telefone, origem: 'WhatsApp', etapa: 0, valor: 0, criado: hoje() }); save(); toast('Lead criado no CRM'); };
+          $('#nc').onclick = () => formModal('Nova conversa', [{ k: 'cliente', l: 'Nome do cliente', req: true }, { k: 'telefone', l: 'WhatsApp', ph: '(67) 90000-0000' }, { k: 'processo', l: 'Vincular ao processo', t: 'select', o: [['', 'Nenhum'], ...DB.processos.map(p => [p.id, '#' + p.id + ' · ' + p.cliente])] }], vals => {
+            const id = ++DB.seq.conversa; DB.conversas.unshift({ id, cliente: vals.cliente, telefone: vals.telefone, processo: vals.processo ? +vals.processo : null, naoLidas: 0, msgs: [] }); CONV_SEL = id; save(); rerender();
+          });
+        }
+      };
+    },
+    renda() {
+      const exemploLinhas = [['05/08', 'PIX RECEBIDO EMPRESA ALFA LTDA', '2.350,00'], ['10/08', 'SALARIO', '3.100,00'], ['12/08', 'PAGAMENTO BOLETO', '-450,00'], ['20/08', 'PIX RECEBIDO CLIENTE', '380,00'], ['05/09', 'PIX RECEBIDO EMPRESA ALFA LTDA', '2.350,00'], ['10/09', 'SALARIO', '3.100,00'], ['18/09', 'TRANSF MESMA TITULARIDADE', '1.000,00'], ['25/09', 'COMPRA CARTAO', '-210,90'], ['05/10', 'PIX RECEBIDO EMPRESA ALFA LTDA', '2.410,00'], ['10/10', 'SALARIO', '3.100,00'], ['22/10', 'PIX RECEBIDO CLIENTE', '520,00']];
+      const exemplo = exemploLinhas.map(x => x.join(' ')).join('\n');
+      return {
+        t: 'Apurador de renda', s: 'Cole o extrato bancário e a leitura automática separa os créditos válidos, calcula a renda média e a capacidade de financiamento.',
+        html: `<div class="grid g2"><div class="card"><h3>Extrato</h3>
+            <div class="field"><label>Lançamentos</label><div class="lancamento-head"><span>Data</span><span>Descrição</span><span>Valor (R$)</span><span></span></div><div id="lancamentos" class="lancamentos"></div><div class="lancamento-actions"><button class="btn ghost sm" id="addLanc" type="button">${ic('plus')} Adicionar lançamento</button><details><summary>Ou colar extrato em texto</summary><textarea class="inp" id="ex" rows="5" style="font-family:Consolas,monospace;font-size:12.5px">${h(exemplo)}</textarea><button class="btn ghost sm" id="importarLanc" type="button" style="margin-top:8px">Importar linhas</button></details></div></div>
+            <div class="frow"><div class="field"><label>Taxa de juros (% ao ano)</label><input class="inp" id="tj" type="number" step="0.1" value="9.5"></div><div class="field"><label>Prazo (meses)</label><input class="inp" id="pz" type="number" value="360"></div></div>
+            <button class="btn accent full" id="ap">${ic('spark')} Apurar renda</button></div>
+          <div class="card" id="res"><h3>Resultado</h3><div class="empty">Cole o extrato e clique em Apurar renda.</div></div></div>`,
+        after() {
+          const root = $('#lancamentos');
+          const parseMoney = value => { let s = String(value || '').trim().replace(/\s/g, ''); if (!s) return NaN; if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.'); else s = s.replace(/\./g, ''); return Number(s); };
+          const parseLine = line => { const m = String(line || '').trim().match(/^(\d{2}\/\d{2})(?:\/\d{2,4})?\s+(.+?)\s+(-?[\d.]+(?:,\d{1,2})?)$/); return m ? [m[1], m[2], m[3]] : null; };
+          const addRow = (values = ['', '', '']) => { const row = document.createElement('div'); row.className = 'lanc-row'; row.innerHTML = `<input class="inp ld" placeholder="dd/mm" value="${h(values[0])}"><input class="inp ldesc" placeholder="Ex.: salário" value="${h(values[1])}"><input class="inp lval" placeholder="0,00" value="${h(values[2])}"><button class="remove-lanc" type="button" title="Remover lançamento">×</button>`; root.appendChild(row); row.querySelector('.remove-lanc').onclick = () => row.remove(); };
+          exemploLinhas.forEach(addRow);
+          $('#addLanc').onclick = () => addRow();
+          $('#importarLanc').onclick = () => { const rows = $('#ex').value.split('\n').map(parseLine).filter(Boolean); if (!rows.length) return toast('Não encontrei linhas no formato informado.'); root.innerHTML = ''; rows.forEach(addRow); toast(rows.length + ' lançamento(s) importado(s).'); };
+          $('#ap').onclick = () => {
+            const meses = {}, ignorados = [], linhas = [...root.querySelectorAll('.lanc-row')]; let invalidas = 0;
+            linhas.forEach(row => { const data = $('.ld', row).value.trim(), desc = $('.ldesc', row).value.trim(), val = parseMoney($('.lval', row).value); if (!/^\d{2}\/\d{2}$/.test(data) || !desc || Number.isNaN(val)) { invalidas++; return; } if (val <= 0) return; if (/mesma titularidade|estorno|resgate|aplica|empr[eé]stimo/i.test(desc)) { ignorados.push(desc + ' · ' + brl(val)); return; } const mes = data.split('/')[1]; meses[mes] = (meses[mes] || 0) + val; });
+            if (invalidas) toast(invalidas + ' linha(s) incompleta(s) foram ignoradas.');
+            const ks = Object.keys(meses).sort(); if (!ks.length) { $('#res').innerHTML = '<h3>Resultado</h3><div class="empty">Preencha data, descrição e valor em pelo menos uma linha.</div>'; return; }
+            const media = ks.reduce((s, k) => s + meses[k], 0) / ks.length;
+            const parcela = media * .3, i = Math.pow(1 + (+$('#tj').value || 9.5) / 100, 1 / 12) - 1, n = +$('#pz').value || 360;
+            const pv = parcela * (1 - Math.pow(1 + i, -n)) / i;
+            const nm = ['', 'jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+            $('#res').innerHTML = `<h3>Resultado</h3><div class="grid g2" style="gap:12px">${kpi('Renda média apurada', brl(media), ks.length + ' meses lidos', 'money')}${kpi('Parcela máxima (30%)', brl(parcela), 'regra de comprometimento', 'calc')}</div>
+              <div class="card kpi mt" style="background:var(--accent-soft);border-color:var(--accent)"><div class="lab">${ic('home')}Financiamento possível</div><div class="val">${brl(pv)}</div><div class="foot">${n} meses a ${$('#tj').value}% ao ano, tabela Price</div></div>
+              <div class="tbl-wrap mt"><table><thead><tr><th>Mês</th><th class="num">Créditos válidos</th></tr></thead><tbody>${ks.map(k => `<tr><td>${nm[+k]}</td><td class="num">${brl(meses[k])}</td></tr>`).join('')}</tbody></table></div>
+              ${ignorados.length ? `<p class="muted" style="font-size:12.5px">Desconsiderados: ${ignorados.map(h).join('; ')}</p>` : ''}
+              <div class="frow mt" style="align-items:end"><div class="field" style="margin:0"><label>Aplicar ao processo</label><select class="inp" id="pr">${DB.processos.map(p => `<option value="${p.id}">#${p.id} · ${h(p.cliente)}</option>`).join('')}</select></div><button class="btn" id="apl">Gravar renda</button></div>`;
+            $('#apl').onclick = () => { const p = proc($('#pr').value); p.renda = Math.round(media); p.historico.push({ data: hoje(), txt: 'Renda apurada pelo extrato: ' + brl(media), por: SESS.nome }); save(); toast('Renda gravada no processo #' + p.id); };
+          };
+        }
+      };
+    },
+    formularios() {
+      const FORMS = [['Caixa', 'Ficha cadastro pessoa física'], ['Caixa', 'Declaração de propósito MCMV'], ['Caixa', 'Autorização de consulta ao FGTS'], ['Caixa', 'Declaração de renda informal'], ['Itaú', 'Proposta de financiamento imobiliário'], ['Bradesco', 'Ficha cadastral do proponente'], ['Santander', 'Proposta de crédito imobiliário'], ['Banco do Brasil', 'Ficha cadastral PF'], ['Inter', 'Proposta de financiamento']];
+      return {
+        t: 'Formulários dos bancos', s: 'Escolha o processo e o formulário sai preenchido, pronto para imprimir ou salvar em PDF.',
+        html: `<div class="toolbar"><label class="muted">Processo</label><select class="inp grow" id="pr">${DB.processos.map(p => `<option value="${p.id}">#${p.id} · ${h(p.cliente)} · ${h(p.banco)}</option>`).join('')}</select></div>
+          <div class="tbl-wrap"><table><thead><tr><th>Banco</th><th>Formulário</th><th></th></tr></thead><tbody>${FORMS.map((f, i) => `<tr><td><span class="tag info">${f[0]}</span></td><td>${f[1]}</td><td class="num"><button class="btn ghost sm" data-f="${i}">${ic('doc')} Gerar</button></td></tr>`).join('')}</tbody></table></div>`,
+        after(v) {
+          $$('[data-f]', v).forEach(b => b.onclick = () => {
+            const [banco, nome] = FORMS[+b.dataset.f], p = proc($('#pr').value);
+            const linhas = [['Proponente', p.cliente], ['CPF', p.cpf], ['Telefone', p.telefone], ['Modalidade', p.modalidade], ['Valor de compra e venda', brl(p.valorImovel)], ['Valor do financiamento', brl(p.financiamento)], ['Recursos próprios', brl(p.valorImovel - p.financiamento)], ['Renda familiar bruta', brl(p.renda)], ['Empreendimento e unidade', (p.empreendimento || '—') + (p.unidade ? ' · ' + p.unidade : '')], ['Correspondente', DB.config.escritorio], ['Data', fdata(hoje())]];
+            modal(nome, `<div class="doc"><div class="dh"><div><b style="font-size:16px">${h(banco)}</b><div class="muted">${h(nome)}</div></div>${logo(26)}</div>
+              <table>${linhas.map(([a, b2]) => `<tr><td>${h(a)}</td><td><b>${h(b2) || '—'}</b></td></tr>`).join('')}</table>
+              <p style="font-size:12px;color:var(--muted);margin-top:14px">Declaro que as informações acima são verdadeiras e autorizo a consulta aos órgãos de proteção ao crédito.</p>
+              <div class="sig"><div>${h(p.cliente)}</div><div>${h(DB.config.escritorio)}</div></div></div>`, [{ t: 'Fechar', cls: 'ghost', fn: closeModal }, { t: ic('print') + ' Imprimir', fn: () => window.print() }], true);
+            p.historico.push({ data: hoje(), txt: 'Formulário gerado: ' + banco + ' · ' + nome, por: SESS.nome }); save();
+          });
+        }
+      };
+    },
+    config() {
+      return {
+        t: 'Configurações', s: 'Marca própria (white label), equipe e dados da demonstração.',
+        html: `<div class="grid g2"><div class="card"><h3>Marca do escritório</h3>
+            <div class="field"><label>Nome do escritório</label><input class="inp" id="ce" value="${h(DB.config.escritorio)}"></div>
+            <div class="field"><label>WhatsApp do comercial e suporte</label><input class="inp" id="cw" value="${h(DB.config.whatsapp || '')}" placeholder="5567999999999"></div>
+            <div class="field"><label>Cor de destaque</label><input class="inp" id="cc" type="color" value="${h(DB.config.cor)}" style="height:44px;padding:4px"></div>
+            <button class="btn" id="sv">Salvar</button></div>
+          <div class="card"><h3>Equipe</h3><div class="tbl-wrap" style="border:0"><table><tbody>${RESPONSAVEIS.map(r => { const n = DB.processos.filter(p => p.responsavel === r); return `<tr><td><b>${r}</b><br><span class="muted" style="font-size:12px">Analista de crédito</span></td><td class="num">${n.length} processos<br><span class="${n.filter(atrasado).length ? 'tag bad' : 'tag ok'}">${n.filter(atrasado).length} atrasado(s)</span></td></tr>`; }).join('')}</tbody></table></div></div></div>
+          <div class="card mt"><h3>Acessos da demonstração</h3><div class="tbl-wrap" style="border:0"><table><thead><tr><th>Perfil</th><th>Nome</th><th>E-mail</th><th>Senha</th></tr></thead><tbody>${DB.usuarios.map(u => `<tr><td>${PERFIS[u.perfil].nome}</td><td>${h(u.nome)}</td><td>${h(u.email)}</td><td>${h(u.senha)}</td></tr>`).join('')}</tbody></table></div>
+            <p class="muted" style="font-size:13px">Tudo fica gravado só neste navegador. Para começar de novo:</p><button class="btn danger" id="rs">Restaurar dados de demonstração</button></div>`,
+        after() {
+          $('#cc').oninput = e => document.documentElement.style.setProperty('--accent', e.target.value);
+          $('#sv').onclick = () => { DB.config.escritorio = $('#ce').value.trim() || 'COR365'; DB.config.whatsapp = $('#cw').value.trim(); DB.config.cor = $('#cc').value; save(); aplicaMarca(); toast('Configurações salvas'); };
+          $('#rs').onclick = () => { if (confirm('Apagar tudo e voltar aos dados de demonstração?')) { DB = seedDB(); save(); aplicaMarca(); toast('Dados restaurados'); rerender(); } };
+        }
+      };
+    }
+  },
+
+  /* ---------- IMOBILIÁRIA E CORRETOR ---------- */
+  imob: {
+    painel() {
+      const meus = DB.processos.filter(p => p.corretor === SESS.nome), res = listaReservas(false);
+      return {
+        t: 'Painel', s: `Olá, ${h(SESS.nome.split(' ')[0])}. Acompanhe o crédito dos seus clientes em tempo real.`,
+        a: `<button class="btn accent" id="ec">${ic('plus')} Enviar cliente ao correspondente</button>`,
+        html: `<div class="grid g4">${kpi('Clientes em crédito', meus.length, 'processos com você', 'users')}${kpi('Crédito aprovado', meus.filter(p => p.fase >= 3).length, 'já passaram da análise', 'check')}${kpi('Propostas abertas', DB.propostas.filter(p => p.status === 'Enviada').length, '', 'doc')}${kpi('Reservas ativas', res.length, 'unidades segurando', 'key')}</div>
+          <div class="card mt"><div class="head"><h3>Andamento dos meus clientes</h3><a class="r" href="#/app/clientes" style="font-size:13px">Ver todos</a></div>
+            <div class="tbl-wrap" style="border:0"><table><tbody>${meus.map(p => `<tr class="click" data-p="${p.id}"><td><b>${h(p.cliente)}</b><br><span class="muted" style="font-size:12px">${h(p.banco)} · ${brl(p.financiamento)}</span></td><td>${tagFase(p)}</td><td style="width:30%">${barra(progresso(p), p.fase >= 6 ? 'var(--ok)' : 'var(--navy2)')}</td><td class="num muted">${progresso(p)}%</td></tr>`).join('') || '<tr><td class="empty">Nenhum cliente ainda.</td></tr>'}</tbody></table></div></div>`,
+        after(v) { $$('[data-p]', v).forEach(r => r.onclick = () => go('app/processo/' + r.dataset.p)); $('#ec').onclick = enviarCliente; }
+      };
+    },
+    clientes() {
+      const lista = DB.processos.filter(p => p.imobiliaria);
+      return {
+        t: 'Meus clientes', s: 'Fase do crédito de cada cliente da imobiliária, sem precisar ligar para o correspondente.',
+        a: `<button class="btn accent" id="ec">${ic('plus')} Enviar cliente</button>`,
+        html: `<div class="tbl-wrap"><table><thead><tr><th>Cliente</th><th>Corretor</th><th>Banco</th><th>Fase</th><th>Andamento</th><th class="num">Pendências</th></tr></thead><tbody>
+          ${lista.map(p => `<tr class="click" data-p="${p.id}"><td><b>${h(p.cliente)}</b><br><span class="muted" style="font-size:12px">#${p.id} · ${brl(p.financiamento)}</span></td><td>${h(p.corretor)}</td><td>${h(p.banco)}</td><td>${tagFase(p)}</td><td>${barra(progresso(p), p.fase >= 6 ? 'var(--ok)' : 'var(--navy2)')}</td><td class="num">${pendencias(p).length ? `<span class="tag warn">${pendencias(p).length}</span>` : '<span class="tag ok">ok</span>'}</td></tr>`).join('')}</tbody></table></div>`,
+        after(v) { $$('[data-p]', v).forEach(r => r.onclick = () => go('app/processo/' + r.dataset.p)); $('#ec').onclick = enviarCliente; }
+      };
+    },
+    imoveis() {
+      const campos = (m = {}) => [{ k: 'titulo', l: 'Título', req: true, v: m.titulo }, { k: 'bairro', l: 'Bairro', v: m.bairro, half: true }, { k: 'cidade', l: 'Cidade', v: m.cidade || 'Campo Grande', half: true }, { k: 'valor', l: 'Valor (R$)', t: 'number', req: true, v: m.valor, half: true }, { k: 'status', l: 'Situação', t: 'select', o: ['Disponível', 'Em proposta', 'Vendido'], v: m.status, half: true }, { k: 'quartos', l: 'Quartos', t: 'number', v: m.quartos, half: true }, { k: 'area', l: 'Área (m²)', t: 'number', v: m.area, half: true }];
+      return {
+        t: 'Imóveis', s: `${DB.imoveis.length} imóveis na carteira`,
+        a: `<button class="btn accent" id="ni">${ic('plus')} Novo imóvel</button>`,
+        html: `<div class="grid g3">${DB.imoveis.map(m => `<div class="card imv click" data-i="${m.id}" style="cursor:pointer"><div class="ph"><span class="tag ${m.status === 'Disponível' ? 'ok' : m.status === 'Vendido' ? '' : 'warn'}">${h(m.status)}</span></div>
+          <div class="bd"><b>${h(m.titulo)}</b><div class="pr">${brl(m.valor)}</div><div class="muted" style="font-size:13px">${h(m.bairro)}, ${h(m.cidade)} · ${num(m.quartos)} quartos · ${num(m.area)} m²</div></div></div>`).join('')}</div>`,
+        after(v) {
+          $('#ni').onclick = () => formModal('Novo imóvel', campos(), vals => { DB.imoveis.push({ id: ++DB.seq.imovel, ...vals }); save(); rerender(); });
+          $$('[data-i]', v).forEach(c => c.onclick = () => { const m = DB.imoveis.find(x => x.id === +c.dataset.i); formModal('Editar imóvel', campos(m), vals => { Object.assign(m, vals); save(); rerender(); }, [{ t: 'Excluir', cls: 'danger', fn: () => { if (confirm('Excluir este imóvel?')) { DB.imoveis = DB.imoveis.filter(x => x !== m); save(); closeModal(); rerender(); } } }]); });
+        }
+      };
+    },
+    empreendimentos: () => listaEmpreendimentos(false),
+    propostas() {
+      const cor = { Enviada: 'warn', Aceita: 'ok', Recusada: 'bad', 'No correspondente': 'info' };
+      return {
+        t: 'Propostas', s: 'Proposta aceita vai direto para o correspondente abrir o processo de crédito.',
+        a: `<button class="btn accent" id="np">${ic('plus')} Nova proposta</button>`,
+        html: `<div class="tbl-wrap"><table><thead><tr><th>Cliente</th><th>Imóvel</th><th class="num">Valor</th><th>Pagamento</th><th>Data</th><th>Situação</th><th></th></tr></thead><tbody>
+          ${DB.propostas.slice().reverse().map(p => `<tr><td><b>${h(p.cliente)}</b><br><span class="muted" style="font-size:12px">${h(p.corretor)}</span></td><td>${h(p.imovel)}</td><td class="num">${brl(p.valor)}</td><td>${h(p.pagamento)}</td><td>${fdata(p.data)}</td><td><span class="tag ${cor[p.status] || ''}">${h(p.status)}</span></td>
+            <td class="num" style="white-space:nowrap">${p.status === 'Enviada' ? `<button class="btn ghost sm" data-ac="${p.id}">Aceita</button> <button class="btn ghost sm" data-rc="${p.id}">Recusada</button>` : p.status === 'Aceita' && /Financ/.test(p.pagamento) ? `<button class="btn sm" data-en="${p.id}">Enviar ao correspondente</button>` : ''}</td></tr>`).join('')}</tbody></table></div>`,
+        after(v) {
+          const opImv = [...DB.imoveis.filter(m => m.status !== 'Vendido').map(m => m.titulo), ...listaReservas(false).map(r => r.e.nome + ' · ' + r.cod)];
+          $('#np').onclick = () => formModal('Nova proposta', [{ k: 'cliente', l: 'Cliente', req: true }, { k: 'imovel', l: 'Imóvel', t: 'select', o: opImv }, { k: 'valor', l: 'Valor proposto (R$)', t: 'number', req: true, half: true }, { k: 'pagamento', l: 'Forma de pagamento', t: 'select', o: ['Financiamento MCMV', 'Financiamento SBPE', 'À vista', 'Consórcio'], half: true }], vals => { DB.propostas.push({ id: ++DB.seq.proposta, ...vals, status: 'Enviada', data: hoje(), corretor: SESS.nome }); save(); rerender(); });
+          const get = id => DB.propostas.find(x => x.id === +id);
+          $$('[data-ac]', v).forEach(b => b.onclick = () => { get(b.dataset.ac).status = 'Aceita'; save(); rerender(); });
+          $$('[data-rc]', v).forEach(b => b.onclick = () => { get(b.dataset.rc).status = 'Recusada'; save(); rerender(); });
+          $$('[data-en]', v).forEach(b => b.onclick = () => {
+            const pr = get(b.dataset.en); const [emp, uni] = pr.imovel.split(' · ');
+            const p = novoProcesso({ cliente: pr.cliente, valorImovel: pr.valor, financiamento: Math.round(pr.valor * .8), modalidade: /MCMV/.test(pr.pagamento) ? 'MCMV Faixa 2' : 'SBPE', corretor: pr.corretor, empreendimento: uni ? emp : '', unidade: uni || '', origem: 'Enviado pela imobiliária (proposta aceita)' });
+            pr.status = 'No correspondente'; save(); toast('Processo #' + p.id + ' aberto no correspondente'); rerender();
+          });
+        }
+      };
+    },
+    reservas: () => telaReservas(false)
+  },
+
+  /* ---------- CONSTRUTORA ---------- */
+  const: {
+    painel() {
+      let tot = 0, vend = 0, res = 0, vgv = 0;
+      DB.empreendimentos.forEach(e => Object.entries(e.unidades).forEach(([c, u]) => { tot++; if (u.status === 'vendido') { vend++; vgv += precoUnidade(e, c).cheio; } if (u.status === 'reservado') res++; }));
+      const rep = DB.processos.filter(p => p.empreendimento);
+      return {
+        t: 'Painel', s: 'Vendas, reservas e repasse dos empreendimentos.',
+        html: `<div class="grid g4">${kpi('Unidades vendidas', `${vend}<span class="muted" style="font-size:15px"> / ${tot}</span>`, Math.round(vend / tot * 100) + '% vendido', 'check')}${kpi('Reservas ativas', res, 'aguardando assinatura', 'key')}${kpi('VGV vendido', brl(vgv), 'valor geral de vendas', 'money')}${kpi('Repasse em andamento', rep.length, 'clientes no banco', 'swap')}</div>
+          <div class="grid g2 mt">${DB.empreendimentos.map(e => { const us = Object.values(e.unidades), v = us.filter(u => u.status === 'vendido').length, r = us.filter(u => u.status === 'reservado').length; return `<a class="card" href="#/app/espelho/${e.id}" style="text-decoration:none;color:inherit"><div class="head"><h3>${h(e.nome)}</h3><span class="r tag">${h(e.entrega)}</span></div>
+            <div style="display:flex;height:12px;border-radius:99px;overflow:hidden;background:var(--ok-soft)"><div style="width:${v / us.length * 100}%;background:#9aa9b9"></div><div style="width:${r / us.length * 100}%;background:#e9b44c"></div></div>
+            <div class="muted" style="font-size:13px;margin-top:8px">${v} vendidas · ${r} reservadas · ${us.length - v - r} livres ou bloqueadas</div></a>`; }).join('')}</div>
+          <div class="card mt"><h3>Campanhas ativas</h3>${DB.campanhas.filter(c => c.status === 'Ativa').map(c => `<div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #edf0f4"><span class="tag acc">${ic('tag')}</span><b>${h(c.nome)}</b><span class="muted">${h(DB.empreendimentos.find(e => e.id === c.empreendimento)?.nome || '')}</span><span style="margin-left:auto" class="muted">até ${fdata(c.fim)}</span></div>`).join('') || '<div class="empty">Nenhuma campanha ativa.</div>'}</div>`
+      };
+    },
+    empreendimentos: () => listaEmpreendimentos(true),
+    reservas: () => telaReservas(true),
+    campanhas() {
+      const opE = DB.empreendimentos.map(e => [e.id, e.nome]);
+      const campos = (c = {}) => [{ k: 'nome', l: 'Nome da campanha', req: true, v: c.nome }, { k: 'empreendimento', l: 'Empreendimento', t: 'select', o: opE, v: c.empreendimento }, { k: 'desconto', l: 'Desconto (%)', t: 'number', v: c.desconto ?? 0, half: true }, { k: 'status', l: 'Situação', t: 'select', o: ['Ativa', 'Pausada', 'Encerrada'], v: c.status, half: true }, { k: 'inicio', l: 'Início', t: 'date', v: c.inicio || hoje(), half: true }, { k: 'fim', l: 'Fim', t: 'date', v: c.fim || addDias(hoje(), 30), half: true }];
+      return {
+        t: 'Campanhas', s: 'O desconto da campanha ativa já entra no preço do espelho de vendas.',
+        a: `<button class="btn accent" id="nc">${ic('plus')} Nova campanha</button>`,
+        html: `<div class="tbl-wrap"><table><thead><tr><th>Campanha</th><th>Empreendimento</th><th class="num">Desconto</th><th>Período</th><th>Situação</th></tr></thead><tbody>
+          ${DB.campanhas.slice().reverse().map(c => `<tr class="click" data-c="${c.id}"><td><b>${h(c.nome)}</b></td><td>${h(DB.empreendimentos.find(e => e.id === +c.empreendimento)?.nome || '')}</td><td class="num">${c.desconto ? c.desconto + '%' : '—'}</td><td>${fdata(c.inicio)} a ${fdata(c.fim)}</td><td><span class="tag ${c.status === 'Ativa' ? 'ok' : c.status === 'Pausada' ? 'warn' : ''}">${h(c.status)}</span></td></tr>`).join('')}</tbody></table></div>`,
+        after(v) {
+          const fix = vals => ({ ...vals, empreendimento: +vals.empreendimento, desconto: +vals.desconto || 0 });
+          $('#nc').onclick = () => formModal('Nova campanha', campos(), vals => { DB.campanhas.push({ id: ++DB.seq.campanha, ...fix(vals) }); save(); rerender(); });
+          $$('[data-c]', v).forEach(r => r.onclick = () => { const c = DB.campanhas.find(x => x.id === +r.dataset.c); formModal('Editar campanha', campos(c), vals => { Object.assign(c, fix(vals)); save(); rerender(); }, [{ t: 'Excluir', cls: 'danger', fn: () => { if (confirm('Excluir campanha?')) { DB.campanhas = DB.campanhas.filter(x => x !== c); save(); closeModal(); rerender(); } } }]); });
+        }
+      };
+    },
+    repasse() {
+      const lista = DB.processos.filter(p => p.empreendimento);
+      return {
+        t: 'Repasse', s: 'Clientes das unidades vendidas no processo de crédito do banco.',
+        html: `<div class="tbl-wrap"><table><thead><tr><th>Cliente</th><th>Empreendimento</th><th>Unidade</th><th>Banco</th><th>Fase</th><th>Andamento</th><th class="num">Financiamento</th></tr></thead><tbody>
+          ${lista.map(p => `<tr class="click" data-p="${p.id}"><td><b>${h(p.cliente)}</b></td><td>${h(p.empreendimento)}</td><td>${h(p.unidade)}</td><td>${h(p.banco)}</td><td>${tagFase(p)}</td><td>${barra(progresso(p), p.fase >= 6 ? 'var(--ok)' : 'var(--navy2)')}</td><td class="num">${brl(p.financiamento)}</td></tr>`).join('') || '<tr><td colspan="7" class="empty">Nenhum cliente em repasse.</td></tr>'}</tbody></table></div>`,
+        after(v) { $$('[data-p]', v).forEach(r => r.onclick = () => go('app/processo/' + r.dataset.p)); }
+      };
+    }
+  }
+};
+
+/* ---------- telas compartilhadas por imobiliária e construtora ---------- */
+function listaEmpreendimentos(ehConstrutora) {
+  return {
+    t: ehConstrutora ? 'Espelho de vendas' : 'Empreendimentos', s: ehConstrutora ? 'Escolha o empreendimento para ver o espelho em tempo real.' : 'Reserve unidades direto no espelho da construtora.',
+    a: ehConstrutora ? `<button class="btn accent" id="ne">${ic('plus')} Novo empreendimento</button>` : '',
+    html: `<div class="grid g2">${DB.empreendimentos.map(e => { const us = Object.values(e.unidades), d = us.filter(u => u.status === 'disponivel').length, v = us.filter(u => u.status === 'vendido').length; return `<a class="card imv" href="#/app/espelho/${e.id}" style="text-decoration:none;color:inherit"><div class="ph"><span class="tag ok">${d} disponíveis</span></div>
+      <div class="bd"><b style="font-size:16px">${h(e.nome)}</b><div class="muted" style="font-size:13px;margin:4px 0 10px">${h(e.cidade)} · ${e.torres.length} torre(s) · ${us.length} unidades · entrega ${h(e.entrega)}</div>
+      ${barra(v / us.length * 100, 'var(--accent)')}<div class="muted" style="font-size:12px;margin-top:6px">${Math.round(v / us.length * 100)}% vendido · a partir de ${brl(precoUnidade(e, e.torres[0] + '-101').final)}</div></div></a>`; }).join('')}</div>`,
+    after() {
+      const ne = $('#ne'); if (!ne) return;
+      ne.onclick = () => formModal('Novo empreendimento', [{ k: 'nome', l: 'Nome', req: true }, { k: 'cidade', l: 'Cidade', v: 'Campo Grande', half: true }, { k: 'entrega', l: 'Entrega', ph: 'Dez/2028', half: true }, { k: 'torres', l: 'Torres (separadas por vírgula)', v: 'A, B' }, { k: 'andares', l: 'Andares', t: 'number', v: 5, half: true }, { k: 'porAndar', l: 'Unidades por andar', t: 'number', v: 4, half: true }, { k: 'precoBase', l: 'Preço base (R$)', t: 'number', v: 250000, req: true }], vals => {
+        const torres = vals.torres.split(',').map(s => s.trim().toUpperCase()).filter(Boolean); const an = Math.min(30, Math.max(1, +vals.andares || 1)), pa = Math.min(9, Math.max(1, +vals.porAndar || 1));
+        if (!torres.length) return false;
+        const unidades = {}; torres.forEach(t => { for (let a = 1; a <= an; a++) for (let u = 1; u <= pa; u++) unidades[`${t}-${a}0${u}`] = { status: 'disponivel', cliente: '', corretor: '' }; });
+        const id = Math.max(0, ...DB.empreendimentos.map(e => e.id)) + 1;
+        DB.empreendimentos.push({ id, nome: vals.nome, cidade: vals.cidade, entrega: vals.entrega || '—', torres, andares: an, porAndar: pa, precoBase: +vals.precoBase, unidades }); save(); go('app/espelho/' + id);
+      });
+    }
+  };
+}
+function abrirUnidade(e, cod) {
+  const u = e.unidades[cod], pr = precoUnidade(e, cod), cons = SESS.perfil === 'const';
+  const nomes = { disponivel: 'Disponível', reservado: 'Reservado', vendido: 'Vendido', bloqueado: 'Bloqueado' };
+  const corpo = `<dl class="dl"><dt>Empreendimento</dt><dd>${h(e.nome)}</dd><dt>Unidade</dt><dd>${h(cod)}</dd><dt>Situação</dt><dd><span class="un s-${u.status}" style="display:inline-flex;width:auto;height:auto;padding:2px 10px">${nomes[u.status]}</span></dd>
+    <dt>Preço</dt><dd>${pr.camp && pr.camp.desconto ? `<s class="muted">${brl(pr.cheio)}</s> ` : ''}<b>${brl(pr.final)}</b>${pr.camp && pr.camp.desconto ? ` <span class="tag acc">${pr.camp.desconto}% ${h(pr.camp.nome)}</span>` : ''}</dd>
+    ${u.cliente ? `<dt>Cliente</dt><dd>${h(u.cliente)}</dd>` : ''}${u.corretor ? `<dt>Corretor</dt><dd>${h(u.corretor)}</dd>` : ''}${u.ate ? `<dt>Reserva até</dt><dd>${fdata(u.ate)}</dd>` : ''}</dl>`;
+  const set = (st, extra = {}) => { e.unidades[cod] = { status: st, cliente: '', corretor: '', ate: '', ...extra }; save(); closeModal(); rerender(); };
+  const reservar = () => formModal('Reservar ' + cod, [{ k: 'cliente', l: 'Cliente', req: true }, { k: 'corretor', l: 'Corretor', v: SESS.perfil === 'imob' ? SESS.nome : '' }, { k: 'dias', l: 'Prazo da reserva (dias)', t: 'number', v: 2 }], vals => { set('reservado', { cliente: vals.cliente, corretor: vals.corretor, ate: addDias(hoje(), +vals.dias || 2) }); toast('Unidade ' + cod + ' reservada'); });
+  const bts = [];
+  if (u.status === 'disponivel') bts.push({ t: ic('key') + ' Reservar', cls: 'accent', fn: reservar });
+  if (cons) {
+    if (u.status === 'reservado') bts.push({ t: 'Confirmar venda', fn: () => set('vendido', { cliente: u.cliente, corretor: u.corretor }) });
+    if (u.status === 'disponivel') bts.push({ t: 'Bloquear', cls: 'ghost', fn: () => set('bloqueado') });
+    if (u.status !== 'disponivel') bts.push({ t: 'Liberar', cls: 'danger', fn: () => { if (confirm('Liberar a unidade ' + cod + '?')) set('disponivel'); } });
+  } else if (u.status === 'reservado' && u.corretor === SESS.nome) bts.push({ t: 'Cancelar reserva', cls: 'danger', fn: () => set('disponivel') });
+  bts.push({ t: 'Fechar', cls: 'ghost', fn: closeModal });
+  modal('Unidade ' + cod, corpo, bts);
+}
+function telaReservas(todas) {
+  const rows = listaReservas(todas);
+  return {
+    t: 'Reservas', s: todas ? 'Todas as reservas em aberto nos empreendimentos.' : 'Suas reservas. Elas vencem no prazo e a unidade volta para a venda.',
+    html: `<div class="tbl-wrap"><table><thead><tr><th>Empreendimento</th><th>Unidade</th><th>Cliente</th><th>Corretor</th><th>Vence</th><th></th></tr></thead><tbody>
+      ${rows.map(({ e, cod, u }) => { const d = u.ate ? diasEntre(hoje(), u.ate) : 0; return `<tr><td>${h(e.nome)}</td><td><b>${h(cod)}</b></td><td>${h(u.cliente)}</td><td>${h(u.corretor)}</td><td><span class="tag ${d < 0 ? 'bad' : d <= 1 ? 'warn' : 'ok'}">${fdata(u.ate)}${d < 0 ? ' · vencida' : ''}</span></td><td class="num"><button class="btn ghost sm" data-e="${e.id}" data-u="${h(cod)}">Abrir</button></td></tr>`; }).join('') || '<tr><td colspan="6" class="empty">Nenhuma reserva em aberto.</td></tr>'}</tbody></table></div>`,
+    after(v) { $$('[data-u]', v).forEach(b => b.onclick = () => abrirUnidade(DB.empreendimentos.find(x => x.id === +b.dataset.e), b.dataset.u)); }
+  };
+}
+function enviarCliente() {
+  formModal('Enviar cliente ao correspondente', [{ k: 'cliente', l: 'Cliente', req: true }, { k: 'cpf', l: 'CPF', half: true }, { k: 'telefone', l: 'Telefone', half: true }, { k: 'valorImovel', l: 'Valor do imóvel (R$)', t: 'number', half: true }, { k: 'renda', l: 'Renda familiar (R$)', t: 'number', half: true }, { k: 'modalidade', l: 'Modalidade', t: 'select', o: ['MCMV Faixa 1', 'MCMV Faixa 2', 'MCMV Faixa 3', 'Pró-Cotista', 'SBPE'] }], vals => {
+    const p = novoProcesso({ ...vals, financiamento: Math.round((+vals.valorImovel || 0) * .8), corretor: SESS.nome, origem: 'Enviado pelo corretor ' + SESS.nome });
+    toast('Cliente enviado. Processo #' + p.id); go('app/processo/' + p.id);
+  });
+}
+function parcelaEstimada(pv, taxa = 9.5, n = 360) { const i = Math.pow(1 + taxa / 100, 1 / 12) - 1; return pv * i / (1 - Math.pow(1 + i, -n)); }
+
+/* ---------- início ---------- */
+load(); aplicaMarca(); route();
+
+</script>
+</body>
+</html>
