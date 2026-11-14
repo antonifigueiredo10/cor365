@@ -226,3 +226,6 @@ td.num,th.num{text-align:right}
   .bars .row{grid-template-columns:110px 1fr 28px}
   .dl{grid-template-columns:120px 1fr}
 }
+.gate-box.entrada .logo-grande{display:flex;justify-content:center;margin:0 0 8px}
+.gate-box.entrada .logo-grande svg{max-width:100%;height:auto;width:340px}
+.gate-box.entrada form{margin-top:22px}

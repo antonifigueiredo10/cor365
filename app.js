@@ -150,10 +150,18 @@ function go(r) { location.hash = '#/' + r; }
 function route() {
   closeModal();
   const p = location.hash.replace(/^#\/?/, '').split('/');
-  if (p[0] === 'entrar' && PERFIS[p[1]]) return telaLogin(p[1]);
-  if (p[0] === 'app') { if (!SESS) return go(''); return telaApp(p[1] || 'painel', p[2]); }
-  if (SESS && !p[0]) return go('app/painel');
-  telaPerfis();
+  if (p[0] === 'app') { if (!SESS || !SESS.perfil) return go(SESS ? 'hub' : ''); return telaApp(p[1] || 'painel', p[2]); }
+  if (p[0] === 'hub') { if (!SESS) return go(''); if (!SESS.admin) return go('app/painel'); return telaHub(); }
+  if (SESS) return go(SESS.admin ? 'hub' : 'app/painel');
+  if (p[0]) return go('');
+  telaEntrada();
+}
+
+/* ---------- admin do HUB (senha guardada só como hash SHA-256 de e-mail + senha) ---------- */
+const ADMIN = { email: 'admin@imov365.com.br', nome: 'Administrador', hash: '95921b2e5a43f1aa03a74523b031fd397bfd1345f805413ae3183a132829669f' };
+async function sha256(t) {
+  const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t));
+  return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
 }
 window.addEventListener('hashchange', route);
 
@@ -169,40 +177,45 @@ function ligaWhats(el) {
     window.open('https://wa.me/' + n + '?text=' + encodeURIComponent(a.dataset.wa === 'comercial' ? 'Olá! Quero conhecer o IMOV365.' : 'Olá! Preciso de suporte no IMOV365.'), '_blank', 'noopener');
   });
 }
-function telaPerfis() {
-  document.title = 'Bem-vindo | IMOV365';
-  app.innerHTML = `<div class="gate dots"><div class="gate-box">
-    ${logo(46)}<div class="kicker">Escolha o perfil para continuar.</div><h1>Acessar</h1>
-    ${Object.entries(PERFIS).map(([k, p]) => `<button class="perfil" data-p="${k}"><span class="ico">${ic(p.ico)}</span><span><b>${p.nome}</b><small>${p.sub}</small></span><span class="chev">${ic('chev')}</span></button>`).join('')}
-    ${linksRodape()}</div></div>`;
-  $$('.perfil', app).forEach(b => b.onclick = () => go('entrar/' + b.dataset.p));
-  ligaWhats(app);
-}
-function telaLogin(perfil) {
-  const pf = PERFIS[perfil];
-  document.title = 'Acessar | IMOV365';
-  app.innerHTML = `<div class="gate dots"><div class="gate-box">
-    <button class="back" id="volta">${ic('back')} Trocar perfil</button>
-    ${logo(46)}<div class="kicker">${pf.nome}</div><h1>Acessar</h1>
+function telaEntrada() {
+  document.title = 'Entrar | IMOV365';
+  app.innerHTML = `<div class="gate dots"><div class="gate-box entrada">
+    <div class="logo-grande">${logo(84)}</div>
+    <div class="kicker" style="text-align:center">Plataforma do crédito imobiliário</div>
     <form id="fl" autocomplete="on">
-      <div class="field"><label>E-mail <span class="req">*</span></label><input class="inp" name="email" type="email" required></div>
-      <div class="field"><label>Senha <span class="req">*</span></label><input class="inp" name="senha" type="password" required></div>
+      <div class="field"><label>E-mail <span class="req">*</span></label><input class="inp" name="email" type="email" autocomplete="username" required></div>
+      <div class="field"><label>Senha <span class="req">*</span></label><input class="inp" name="senha" type="password" autocomplete="current-password" required></div>
       <div class="erro" id="err"></div>
       <a href="#" id="esq" style="font-size:13px">Esqueci minha senha</a>
-      <button class="btn full" style="margin-top:16px">Acessar</button>
+      <button class="btn full" style="margin-top:16px">Entrar</button>
     </form>${linksRodape()}</div></div>`;
-  $('#volta').onclick = () => go('');
-  $('#esq').onclick = e => { e.preventDefault(); toast('Enviamos o link de troca de senha para o seu e-mail'); };
-  $('[name=senha]').focus();
+  $('#esq').onclick = e => { e.preventDefault(); toast('Fale com o administrador para trocar a senha'); };
+  $('[name=email]').focus();
   ligaWhats(app);
-  $('#fl').onsubmit = e => {
+  $('#fl').onsubmit = async e => {
     e.preventDefault();
     const f = new FormData(e.target), em = String(f.get('email')).trim().toLowerCase(), se = String(f.get('senha'));
-    const u = DB.usuarios.find(x => x.email === em && x.senha === se && x.perfil === perfil);
-    if (!u) { $('#err').textContent = 'E-mail ou senha inválidos para este perfil.'; return; }
-    setSess({ email: u.email, nome: u.nome, perfil });
+    if (em === ADMIN.email) {
+      let ok = false;
+      try { ok = (await sha256(em + '|' + se)) === ADMIN.hash; } catch (x) { }
+      if (!ok) { $('#err').textContent = 'E-mail ou senha inválidos.'; return; }
+      setSess({ email: ADMIN.email, nome: ADMIN.nome, admin: true, perfil: null });
+      return go('hub');
+    }
+    const u = DB.usuarios.find(x => x.email === em && x.senha === se);
+    if (!u) { $('#err').textContent = 'E-mail ou senha inválidos.'; return; }
+    setSess({ email: u.email, nome: u.nome, perfil: u.perfil });
     go('app/painel');
   };
+}
+function telaHub() {
+  document.title = 'HUB | IMOV365';
+  app.innerHTML = `<div class="gate dots"><div class="gate-box">
+    ${logo(46)}<div class="kicker">HUB · escolha o sistema</div><h1>Olá, ${h(SESS.nome.split(' ')[0])}</h1>
+    ${Object.entries(PERFIS).map(([k, p]) => `<button class="perfil" data-p="${k}"><span class="ico">${ic(p.ico)}</span><span><b>${p.nome}</b><small>${p.sub}</small></span><span class="chev">${ic('chev')}</span></button>`).join('')}
+    <div class="gate-links"><span class="muted" style="font-size:13px">${h(SESS.email)}</span><a href="#" id="sair">${ic('logout')} Sair</a></div></div></div>`;
+  $$('.perfil', app).forEach(b => b.onclick = () => { setSess({ ...SESS, perfil: b.dataset.p }); go('app/painel'); });
+  $('#sair').onclick = e => { e.preventDefault(); setSess(null); go(''); };
 }
 
 /* ---------- casca do app ---------- */
@@ -222,11 +235,12 @@ function telaApp(view, arg) {
   app.innerHTML = `<div class="app">
     <aside class="side" id="side"><div class="brand">${logo(30, true)}<div class="who">${pf.nome}</div></div>
       <nav>${pf.menu.map(([k, n, i]) => { const b = badge(k); return `<a href="#/app/${k}" class="${k === ativo ? 'on' : ''}">${ic(i)}${n}${b ? `<span class="badge">${b}</span>` : ''}</a>`; }).join('')}</nav>
-      <div class="foot"><b>${h(SESS.nome)}</b><span class="muted" style="color:#8fa5bb">${h(SESS.email)}</span><br><button id="sair">${ic('logout')} Sair</button></div></aside>
+      <div class="foot"><b>${h(SESS.nome)}</b><span class="muted" style="color:#8fa5bb">${h(SESS.email)}</span><br>${SESS.admin ? `<button id="hub">${ic('back')} Voltar ao HUB</button><br>` : ''}<button id="sair">${ic('logout')} Sair</button></div></aside>
     <div class="main"><header class="top"><button class="menu-btn" id="mb" aria-label="Menu">${ic('menu')}</button>
       <div><h1>${h(r.t || '')}</h1>${r.s ? `<div class="sub">${r.s}</div>` : ''}</div><div class="actions" id="acts">${r.a || ''}</div></header>
       <section class="view" id="view">${r.html || ''}</section></div></div>`;
   $('#sair').onclick = () => { setSess(null); go(''); };
+  if ($('#hub')) $('#hub').onclick = () => { setSess({ ...SESS, perfil: null }); go('hub'); };
   $('#mb').onclick = () => $('#side').classList.toggle('open');
   $$('#side nav a').forEach(a => a.addEventListener('click', () => $('#side').classList.remove('open')));
   if (r.after) r.after($('#view'));
