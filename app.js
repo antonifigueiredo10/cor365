@@ -14,6 +14,7 @@ const diasEntre = (a, b) => Math.round((new Date(b + 'T12:00') - new Date(a + 'T
 const horaAgora = () => new Date().toTimeString().slice(0, 5);
 
 const ICONES = {
+  pin: 'M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5',
   bank: 'M3 10h18M5 10v8M9 10v8M15 10v8M19 10v8M3 21h18M12 3l9 5H3z',
   home: 'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z',
   helmet: 'M4 17h16M5 17a7 7 0 0 1 14 0M10 10V6h4v4M3 20h18',
@@ -85,7 +86,7 @@ function novoProcesso(v) {
     id, cliente: v.cliente, cpf: v.cpf || '', telefone: v.telefone || '', banco: v.banco || 'Caixa', modalidade: v.modalidade || 'MCMV Faixa 2',
     valorImovel: +v.valorImovel || 0, financiamento: +v.financiamento || 0, renda: +v.renda || 0, fase: 0, entrouFase: hoje(),
     responsavel: v.responsavel || RESPONSAVEIS[id % RESPONSAVEIS.length], corretor: v.corretor || '', imobiliaria: v.corretor ? 'Imobiliária Horizonte' : '',
-    empreendimento: v.empreendimento || '', unidade: v.unidade || '', docs, criado: hoje(),
+    empreendimento: v.empreendimento || '', unidade: v.unidade || '', cidade: v.cidade || '', bairro: v.bairro || '', docs, criado: hoje(),
     historico: [{ data: hoje(), txt: v.origem || 'Processo aberto', por: SESS.nome }]
   };
   DB.processos.push(p); save(); return p;
@@ -100,7 +101,7 @@ const precoUnidade = (e, cod) => {
 /* ---------- perfis ---------- */
 const PERFIS = {
   banco: { nome: 'Correspondente bancário', sub: 'Processos, crédito e CRM', ico: 'bank',
-    menu: [['painel', 'Painel', 'chart'], ['esteira', 'Esteira de processos', 'kanban'], ['crm', 'CRM de vendas', 'funnel'], ['atendimento', 'Atendimento', 'chat'], ['renda', 'Apurador de renda', 'calc'], ['formularios', 'Formulários dos bancos', 'doc'], ['config', 'Configurações', 'gear']] },
+    menu: [['painel', 'Painel', 'chart'], ['esteira', 'Esteira de processos', 'kanban'], ['crm', 'CRM de vendas', 'funnel'], ['atendimento', 'Atendimento', 'chat'], ['renda', 'Apurador de renda', 'calc'], ['mapa', 'Mapa de oportunidades', 'pin'], ['formularios', 'Formulários dos bancos', 'doc'], ['config', 'Configurações', 'gear']] },
   imob: { nome: 'Imobiliária e corretor', sub: 'Imóveis, propostas e reservas', ico: 'home',
     menu: [['painel', 'Painel', 'chart'], ['clientes', 'Meus clientes', 'users'], ['imoveis', 'Imóveis', 'home'], ['empreendimentos', 'Empreendimentos', 'building'], ['propostas', 'Propostas', 'doc'], ['reservas', 'Reservas', 'key']] },
   const: { nome: 'Construtora', sub: 'Empreendimentos e campanhas', ico: 'helmet',
@@ -268,6 +269,37 @@ function kanbanDnD(root, onDrop) {
     col.addEventListener('drop', e => { e.preventDefault(); col.classList.remove('over'); const id = +e.dataTransfer.getData('text/plain'); if (id) onDrop(id, +col.dataset.col); });
   });
 }
+/* ---------- mapa de oportunidades ---------- */
+const CIDADES_MS = { 'Campo Grande': [-20.4697, -54.6201], 'Dourados': [-22.2211, -54.8056], 'Três Lagoas': [-20.7849, -51.7007], 'Corumbá': [-19.0078, -57.6547], 'Ponta Porã': [-22.5361, -55.7256] };
+/* coordenadas aproximadas do bairro (o pino marca a região desejada, nunca o endereço do cliente) */
+const BAIRROS_MS = [
+  ['Campo Grande', 'Centro', -20.4628, -54.6156], ['Campo Grande', 'Jardim dos Estados', -20.4590, -54.6010], ['Campo Grande', 'Tiradentes', -20.4750, -54.5660],
+  ['Dourados', 'Centro', -22.2230, -54.8060], ['Campo Grande', 'Carandá', -20.4370, -54.5880], ['Três Lagoas', 'Centro', -20.7880, -51.7030],
+  ['Campo Grande', 'Nova Lima', -20.3960, -54.6020], ['Corumbá', 'Centro', -19.0090, -57.6520], ['Campo Grande', 'Aero Rancho', -20.5180, -54.6570],
+  ['Ponta Porã', 'Centro', -22.5360, -55.7250], ['Campo Grande', 'Coronel Antonino', -20.4240, -54.6200], ['Dourados', 'Jardim Água Boa', -22.2440, -54.8280],
+  ['Três Lagoas', 'Vila Nova', -20.7700, -51.6900]
+];
+function localDe(p) {
+  const j = n => (((p.id * n) % 9) - 4) * 0.0018;
+  if (p.cidade && CIDADES_MS[p.cidade]) {
+    const b = BAIRROS_MS.find(x => x[0] === p.cidade && x[1].toLowerCase() === String(p.bairro || '').trim().toLowerCase());
+    const c = b ? [b[2], b[3]] : CIDADES_MS[p.cidade];
+    return { cidade: p.cidade, bairro: (p.bairro || '').trim() || 'Bairro não informado', lat: c[0] + j(7), lng: c[1] + j(13) };
+  }
+  const b = BAIRROS_MS[p.id % BAIRROS_MS.length];
+  return { cidade: b[0], bairro: b[1], lat: b[2] + j(7), lng: b[3] + j(13) };
+}
+const statusOp = p => p.fase >= 7 ? 'Contratado' : p.fase >= 3 ? 'Aprovado' : 'Em análise';
+const milhar = v => v >= 1e6 ? 'R$ ' + (v / 1e6).toFixed(1).replace('.', ',') + ' mi' : 'R$ ' + Math.round(v / 1000) + ' mil';
+let _leaflet;
+function carregaLeaflet() {
+  if (window.L) return Promise.resolve();
+  return _leaflet || (_leaflet = new Promise((ok, ko) => {
+    let n = 0; const um = () => { if (++n === 2) ok(); }, erro = () => { _leaflet = null; ko(); };
+    const c = document.createElement('link'); c.rel = 'stylesheet'; c.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'; c.onload = um; c.onerror = erro; document.head.appendChild(c);
+    const s = document.createElement('script'); s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'; s.onload = um; s.onerror = erro; document.head.appendChild(s);
+  }));
+}
 function camposProcesso(v = {}) {
   return [
     { k: 'cliente', l: 'Cliente', req: true, v: v.cliente },
@@ -276,7 +308,8 @@ function camposProcesso(v = {}) {
     { k: 'valorImovel', l: 'Valor do imóvel (R$)', t: 'number', v: v.valorImovel, half: true }, { k: 'financiamento', l: 'Valor financiado (R$)', t: 'number', v: v.financiamento, half: true },
     { k: 'renda', l: 'Renda familiar (R$)', t: 'number', v: v.renda, half: true }, { k: 'responsavel', l: 'Responsável', t: 'select', o: RESPONSAVEIS, v: v.responsavel, half: true },
     { k: 'corretor', l: 'Corretor', v: v.corretor, half: true }, { k: 'empreendimento', l: 'Empreendimento', t: 'select', o: ['', ...DB.empreendimentos.map(e => e.nome)], v: v.empreendimento, half: true },
-    { k: 'unidade', l: 'Unidade', v: v.unidade, half: true, ph: 'A-302' }
+    { k: 'unidade', l: 'Unidade', v: v.unidade, half: true, ph: 'A-302' },
+    { k: 'cidade', l: 'Cidade onde quer comprar', t: 'select', o: ['', ...Object.keys(CIDADES_MS)], v: v.cidade || (v.id ? localDe(v).cidade : ''), half: true }, { k: 'bairro', l: 'Bairro desejado', v: v.bairro || (v.id ? localDe(v).bairro : ''), half: true, ph: 'Centro' }
   ];
 }
 function listaReservas(todas) {
@@ -447,6 +480,83 @@ const VIEWS = {
           $('#nc').onclick = () => formModal('Nova conversa', [{ k: 'cliente', l: 'Nome do cliente', req: true }, { k: 'telefone', l: 'WhatsApp', ph: '(67) 90000-0000' }, { k: 'processo', l: 'Vincular ao processo', t: 'select', o: [['', 'Nenhum'], ...DB.processos.map(p => [p.id, '#' + p.id + ' · ' + p.cliente])] }], vals => {
             const id = ++DB.seq.conversa; DB.conversas.unshift({ id, cliente: vals.cliente, telefone: vals.telefone, processo: vals.processo ? +vals.processo : null, naoLidas: 0, msgs: [] }); CONV_SEL = id; save(); rerender();
           });
+        }
+      };
+    },
+    mapa() {
+      const ps = DB.processos.map(p => ({ p, ...localDe(p), st: statusOp(p) }));
+      const cidades = [...new Set(ps.map(x => x.cidade))].sort();
+      const sts = ['Em análise', 'Aprovado', 'Contratado'];
+      const cls = st => st === 'Em análise' ? 'an' : st === 'Aprovado' ? 'ap' : 'ct';
+      return {
+        t: 'Mapa de oportunidades', s: 'Clientes no mapa com o valor do imóvel que podem comprar. O pino marca o bairro desejado, não o endereço.',
+        html: `<div class="mapa-wrap"><div class="mapa-lado">
+          <div class="mapa-filtros">
+            <div class="field"><label>Cidade</label><select class="inp" id="fc"><option value="">Todas as cidades</option>${cidades.map(c => `<option>${h(c)}</option>`).join('')}</select></div>
+            <div class="field"><label>Bairro</label><select class="inp" id="fb"></select></div>
+            <div class="mchips" id="fs"><button class="mchip on" data-st="">Todos</button>${sts.map(x => `<button class="mchip" data-st="${x}">${x}</button>`).join('')}</div>
+          </div>
+          <div class="mapa-cont"><span>Oportunidades</span><b id="fq">00</b></div>
+          <div class="mapa-lista" id="fl2"></div></div>
+          <div class="mapa-map"><div id="mapa"></div><div class="mapa-aviso" id="mav">Carregando o mapa…</div>
+            <div class="mapa-leg">${sts.map(x => `<span><i class="st-${cls(x)}"></i>${x}</span>`).join('')}</div></div></div>`,
+        after(v) {
+          let map = null, camada = null, mks = {}, atual = [];
+          const tg = st => `<span class="tag ${st === 'Aprovado' ? 'ok' : st === 'Contratado' ? 'info' : 'warn'}">${st}</span>`;
+          const pino = x => `<div class="mpin st-${cls(x.st)}"><b>${milhar(x.p.valorImovel)}</b><small>${x.st}</small></div>`;
+          const pop = x => `<div class="mpop"><b>${h(x.p.cliente)}</b><div>${h(x.bairro)} · ${h(x.cidade)}</div><div>Imóvel até <b>${brl(x.p.valorImovel)}</b></div><div>Crédito ${brl(x.p.financiamento)} · ${h(x.p.banco)}</div><div>Fase: ${FASES[x.p.fase].n}</div><a href="#/app/processo/${x.p.id}">Abrir processo →</a></div>`;
+          const filtra = () => { const c = $('#fc', v).value, b = $('#fb', v).value, st = $('#fs .on', v).dataset.st; return ps.filter(x => (!c || x.cidade === c) && (!b || x.bairro === b) && (!st || x.st === st)); };
+          const bairros = () => {
+            const c = $('#fc', v).value;
+            $('#fb', v).innerHTML = '<option value="">' + (c ? 'Todos os bairros' : 'Selecione uma cidade') + '</option>' + (c ? [...new Set(ps.filter(x => x.cidade === c).map(x => x.bairro))].sort().map(b => `<option>${h(b)}</option>`).join('') : '');
+            $('#fb', v).disabled = !c;
+          };
+          const desenha = () => {
+            const l = filtra(); $('#fq', v).textContent = String(l.length).padStart(2, '0');
+            $('#fl2', v).innerHTML = l.length ? l.map(x => `<div class="mitem" data-id="${x.p.id}"><div class="mtop"><b>${h(x.bairro)} · ${h(x.cidade)}</b>${tg(x.st)}</div>
+              <div class="muted">${h(x.p.cliente)} · ${h(x.p.banco)} · ${h(x.p.modalidade)}</div>
+              <div class="mval">${milhar(x.p.valorImovel)} <small>imóvel · crédito ${brl(x.p.financiamento)}</small></div>
+              <div class="macts"><button class="btn ghost sm" data-ver="${x.p.id}">${ic('pin')} Ver no mapa</button><a class="btn ghost sm" href="#/app/processo/${x.p.id}">Abrir processo</a></div></div>`).join('') : '<div class="empty">Nenhum cliente com esse filtro.</div>';
+            $$('[data-ver]', v).forEach(b => b.onclick = () => {
+              const m = mks[b.dataset.ver]; if (!m) return;
+              if (innerWidth < 821) $('#mapa', v).scrollIntoView({ behavior: 'smooth', block: 'center' });
+              const id = b.dataset.ver; map.once('moveend', () => { const k = mks[id]; if (k && k.openPopup) k.openPopup(); }); map.flyTo(m.getLatLng(), 16, { duration: .6 });
+            });
+            atual = l;
+            if (!map) return;
+            if (l.length) map.fitBounds(L.latLngBounds(l.map(x => [x.lat, x.lng])).pad(.08), { maxZoom: 13, animate: false, padding: innerWidth < 821 ? [24, 24] : [36, 36] });
+            pinta();
+          };
+          /* pinos que se encostariam na tela viram um pino de grupo (quantidade e total); clicar aproxima */
+          const pinta = () => {
+            camada.clearLayers(); mks = {};
+            const gs = [];
+            atual.forEach(x => {
+              const pt = map.latLngToLayerPoint([x.lat, x.lng]);
+              const g = gs.find(g => Math.abs(g.pt.x - pt.x) < 180 && Math.abs(g.pt.y - pt.y) < 60);
+              if (g) g.xs.push(x); else gs.push({ pt, xs: [x] });
+            });
+            gs.forEach(({ xs }) => {
+              if (xs.length === 1) { const x = xs[0]; mks[x.p.id] = L.marker([x.lat, x.lng], { icon: L.divIcon({ className: 'mpin-w', html: pino(x), iconSize: [112, 48], iconAnchor: [56, 56] }) }).bindPopup(pop(x), { offset: [0, -50] }).addTo(camada); return; }
+              const lat = xs.reduce((a, x) => a + x.lat, 0) / xs.length, lng = xs.reduce((a, x) => a + x.lng, 0) / xs.length;
+              const tot = xs.reduce((a, x) => a + x.p.valorImovel, 0), cids = [...new Set(xs.map(x => x.cidade))];
+              const onde = cids.length === 1 ? cids[0] : cids.length === 2 ? cids.join(' e ') : cids.length + ' cidades';
+              L.marker([lat, lng], { icon: L.divIcon({ className: 'mpin-w', html: `<div class="mpin st-grp"><b>${xs.length} clientes · ${milhar(tot)}</b><small>${h(onde)}</small></div>`, iconSize: [176, 48], iconAnchor: [88, 56] }) })
+                .on('click', () => map.fitBounds(L.latLngBounds(xs.map(x => [x.lat, x.lng])), { maxZoom: 16, padding: [90, 90] })).addTo(camada);
+              xs.forEach(x => mks[x.p.id] = { getLatLng: () => L.latLng(x.lat, x.lng) });
+            });
+          };
+          $('#fc', v).onchange = () => { bairros(); desenha(); };
+          $('#fb', v).onchange = desenha;
+          $$('#fs .mchip', v).forEach(b => b.onclick = () => { $$('#fs .mchip', v).forEach(x => x.classList.toggle('on', x === b)); desenha(); });
+          bairros(); desenha();
+          carregaLeaflet().then(() => {
+            if (!document.body.contains(v) || !$('#mapa', v)) return;
+            $('#mav', v).remove();
+            map = L.map($('#mapa', v), { scrollWheelZoom: true }).setView([-20.8, -54.6], 6);
+            L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors · tiles by OpenStreetMap France', subdomains: 'abc', maxZoom: 18 }).addTo(map);
+            camada = L.layerGroup().addTo(map); map.invalidateSize(); map.on('zoomend', pinta); desenha();
+          }).catch(() => { const a = $('#mav', v); if (a) a.textContent = 'Não foi possível carregar o mapa. Confira a internet e abra a tela de novo.'; });
         }
       };
     },
