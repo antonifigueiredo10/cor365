@@ -142,7 +142,7 @@ document.addEventListener('visibilitychange', async () => {
   await _salvando; try { await carrega(); if (!$('.modal-bg')) route(); } catch (e) { }
 });
 function setSess(s) { SESS = s; try { s && s.admin && s.perfil ? localStorage.setItem('imov365_perfil', s.perfil) : localStorage.removeItem('imov365_perfil'); } catch (e) { } }
-async function sair() { try { await salvaAgora(); await SB.auth.signOut(); } catch (e) { } setSess(null); DB = baseVazia(); POOL = {}; SNAP = { p: {}, i: {}, c: {} }; if (location.hash.replace(/^#\/?/, '')) go(''); else route(); }
+async function sair() { try { await salvaAgora(); await SB.auth.signOut(); } catch (e) { } setSess(null); DB = baseVazia(); POOL = {}; SNAP = { p: {}, i: {}, c: {} }; if (location.hash === '#/inicio') route(); else go('inicio'); }
 function aplicaMarca() { document.documentElement.style.setProperty('--accent', DB.config.cor || '#f07a28'); }
 
 /* ---------- regras ---------- */
@@ -228,14 +228,18 @@ function go(r) { location.hash = '#/' + r; }
 function route() {
   closeModal();
   const p = location.hash.replace(/^#\/?/, '').split('/');
-  if (p[0] === 'app') { if (!SESS || !SESS.perfil) return go(SESS ? 'hub' : ''); return telaApp(p[1] || 'painel', p[2]); }
+  if (p[0] === 'app') { if (!SESS || !SESS.perfil) return go(SESS ? 'hub' : 'entrar'); return telaApp(p[1] || 'painel', p[2]); }
   if (p[0] === 'hub') { if (!SESS) return go('entrar'); if (!SESS.admin) return go('app/painel'); return p[1] === 'pedidos' ? telaPedidos() : telaHub(); }
   if (p[0] === 'cadastro') return telaCadastro(p[1]);
   if (p[0] === 'entrar' && SESS) return go(SESS.admin ? 'hub' : 'app/painel');
   if (p[0] === 'entrar') return telaEntrada(p[1]);
-  if (p[0]) return go('');
+  if (p[0] === 'inicio') return telaSite();
+  if (p[0]) return go('inicio');
+  if (PAGINA_RAIZ) return location.replace(PAGINA_RAIZ);
   telaSite();
 }
+/* enquanto o domínio da Patricia não fica pronto, imov365.com.br abre o site dela; para voltar, deixe '' */
+const PAGINA_RAIZ = '/patricia/';
 
 /* ---------- o administrador é o usuário com admin = true na tabela perfis ---------- */
 const ADMIN = { email: 'admin@imov365.com.br' };
@@ -257,7 +261,7 @@ function telaEntrada(perfil) {
   document.title = 'Entrar | IMOV365';
   const sp = (typeof SITE_PERFIS !== 'undefined' && SITE_PERFIS[perfil]) || null;
   app.innerHTML = `<div class="gate dots"><div class="gate-box entrada">
-    <a href="#/" class="s-voltar">${ic('back')} Voltar ao site</a>
+    <a href="#/inicio" class="s-voltar">${ic('back')} Voltar ao site</a>
     <div class="logo-grande">${logo(84)}</div>
     <div class="kicker" style="text-align:center">${sp ? 'Entrar como ' + sp.nome.toLowerCase() : 'Plataforma do crédito imobiliário'}</div>
     <form id="fl" autocomplete="on">

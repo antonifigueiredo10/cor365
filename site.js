@@ -43,7 +43,7 @@ const SITE_FAQ = [
 
 function siteNav() {
   return `<header class="s-top" id="stop"><div class="s-wrap s-top-in">
-    <a href="#/" class="s-logo" aria-label="IMOV365">${logo(34)}</a>
+    <a href="#/inicio" class="s-logo" aria-label="IMOV365">${logo(34)}</a>
     <nav class="s-nav" id="snav">
       <button data-ir="s-perfis">Para quem é</button><button data-ir="s-como">Como funciona</button><button data-ir="s-recursos">Recursos</button><button data-ir="s-seg">Segurança</button><button data-ir="s-faq">Dúvidas</button>
       <span class="s-nav-cta"><a class="s-btn s-btn-ghost" href="#/entrar">Entrar</a><button class="s-btn s-btn-cor" data-ir="s-cad">Cadastre-se</button></span>
@@ -159,7 +159,7 @@ function telaCadastro(perfil) {
   const p = SITE_PERFIS[perfil]; if (!p) return go('cadastro/imob');
   document.title = 'Cadastro ' + p.curto + ' | IMOV365';
   app.innerHTML = `<div class="site s-form-pg">${siteNav()}<div class="s-wrap s-form-grid">
-    <aside class="s-form-lado"><a href="#/" class="s-voltar">${ic('back')} Voltar ao site</a>
+    <aside class="s-form-lado"><a href="#/inicio" class="s-voltar">${ic('back')} Voltar ao site</a>
       <div class="s-kick">Pedido de acesso</div><h1>${p.nome}</h1><p class="s-lead">${p.chamada}</p>
       <ul>${p.itens.slice(0, 4).map(t => `<li>${ic('check')}${t}</li>`).join('')}</ul>
       <div class="s-troca">Outro perfil? ${Object.entries(SITE_PERFIS).filter(([k]) => k !== perfil).map(([k, x]) => `<a href="#/cadastro/${k}">${x.curto}</a>`).join(' · ')}</div>
@@ -198,7 +198,7 @@ function telaCadastro(perfil) {
 function pedidoOk(p, nome = '') {
   $('#sfc').innerHTML = `<div class="s-feito"><div class="s-feito-ico">${ic('check')}</div><h2>Pedido enviado${nome ? ', ' + h(nome.split(' ')[0]) : ''}!</h2>
     <p>Recebemos o seu pedido de acesso como <b>${p.nome.toLowerCase()}</b>. Assim que for aprovado, você recebe o e-mail e a senha para entrar.</p>
-    <div class="s-feito-acts"><a class="s-btn s-btn-cor" href="#/">Voltar ao site</a><a class="s-btn s-btn-ghost" href="#/entrar">Ir para a entrada</a></div></div>`;
+    <div class="s-feito-acts"><a class="s-btn s-btn-cor" href="#/inicio">Voltar ao site</a><a class="s-btn s-btn-ghost" href="#/entrar">Ir para a entrada</a></div></div>`;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
