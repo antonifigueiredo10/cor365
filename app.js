@@ -314,6 +314,7 @@ function telaApp(view, arg) {
   $('#mb').onclick = () => $('#side').classList.toggle('open');
   $$('#side nav a').forEach(a => a.addEventListener('click', () => $('#side').classList.remove('open')));
   if (r.after) r.after($('#view'));
+  divisorias();
   window.scrollTo(0, 0);
 }
 const rerender = () => route();
@@ -1086,5 +1087,38 @@ async function inicia() {
   try { const { data } = await SB.auth.getSession(); if (data.session) await carrega(); }
   catch (e) { try { await SB.auth.signOut(); } catch (x) { } SESS = null; }
   aplicaMarca(); route();
+}
+/* divisória arrastável entre as duas colunas (mapa, apurador e telas em 2 colunas) */
+function divisorias() {
+  const v = document.getElementById('view'); if (!v) return;
+  const alvos = [...v.querySelectorAll('.mapa-wrap, .ap-grid')];
+  [...v.children].forEach(el => { if (el.matches('.grid.g2') && !alvos.includes(el) && el.children.length === 2) alvos.push(el); });
+  alvos.forEach((box, n) => {
+    if (box.querySelector(':scope > .divisoria')) return;
+    const chave = 'imov365_split_' + (location.hash.split('/')[2] || 'x') + '_' + n;
+    const a = box.children[0];
+    const d = document.createElement('div'); d.className = 'divisoria'; d.title = 'Arraste para ajustar a largura';
+    a.after(d); box.classList.add('com-div');
+    const aplica = w => {
+      const tot = box.getBoundingClientRect().width, min = 220;
+      w = Math.max(min, Math.min(tot - min - 12, w));
+      box.style.setProperty('--col1', w + 'px');
+      window.dispatchEvent(new Event('resize'));
+    };
+    let salvo = 0; try { salvo = +localStorage.getItem(chave) || 0; } catch (e) {}
+    if (salvo) requestAnimationFrame(() => aplica(salvo));
+    d.addEventListener('pointerdown', e => {
+      e.preventDefault(); d.setPointerCapture(e.pointerId); box.classList.add('arrastando');
+      const x0 = box.getBoundingClientRect().left;
+      const move = ev => aplica(ev.clientX - x0);
+      const fim = () => {
+        d.removeEventListener('pointermove', move); d.removeEventListener('pointerup', fim); d.removeEventListener('pointercancel', fim);
+        box.classList.remove('arrastando');
+        try { localStorage.setItem(chave, parseInt(getComputedStyle(box).getPropertyValue('--col1')) || ''); } catch (e) {}
+      };
+      d.addEventListener('pointermove', move); d.addEventListener('pointerup', fim); d.addEventListener('pointercancel', fim);
+    });
+    d.addEventListener('dblclick', () => { box.style.removeProperty('--col1'); try { localStorage.removeItem(chave); } catch (e) {} window.dispatchEvent(new Event('resize')); });
+  });
 }
 inicia();
