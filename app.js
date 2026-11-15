@@ -743,34 +743,52 @@ const VIEWS = {
     },
     mapa: () => telaMapa(false),
     renda() {
-      const exemplo = ['05/08 PIX RECEBIDO EMPRESA ALFA LTDA 2.350,00', '10/08 SALARIO 3.100,00', '12/08 PAGAMENTO BOLETO -450,00', '20/08 PIX RECEBIDO CLIENTE 380,00', '05/09 PIX RECEBIDO EMPRESA ALFA LTDA 2.350,00', '10/09 SALARIO 3.100,00', '18/09 TRANSF MESMA TITULARIDADE 1.000,00', '25/09 COMPRA CARTAO -210,90', '05/10 PIX RECEBIDO EMPRESA ALFA LTDA 2.410,00', '10/10 SALARIO 3.100,00', '22/10 PIX RECEBIDO CLIENTE 520,00'].join('\n');
+      const exemplo = [['05/08', 'PIX RECEBIDO EMPRESA ALFA LTDA', '2.350,00'], ['10/08', 'SALARIO', '3.100,00'], ['12/08', 'PAGAMENTO BOLETO', '-450,00'], ['20/08', 'PIX RECEBIDO CLIENTE', '380,00'], ['05/09', 'PIX RECEBIDO EMPRESA ALFA LTDA', '2.350,00'], ['10/09', 'SALARIO', '3.100,00'], ['18/09', 'TRANSF MESMA TITULARIDADE', '1.000,00'], ['25/09', 'COMPRA CARTAO', '-210,90'], ['05/10', 'PIX RECEBIDO EMPRESA ALFA LTDA', '2.410,00'], ['10/10', 'SALARIO', '3.100,00'], ['22/10', 'PIX RECEBIDO CLIENTE', '520,00']];
+      const linha = (d = '', t = '', v = '') => `<div class="ap-lin"><input class="inp ap-d" placeholder="dd/mm" value="${h(d)}"><input class="inp ap-t" placeholder="Descrição" value="${h(t)}"><input class="inp ap-v" placeholder="0,00" value="${h(v)}"><button class="btn ghost ap-x" title="Remover">×</button></div>`;
       return {
-        t: 'Apurador de renda', s: 'Cole o extrato bancário e a leitura automática separa os créditos válidos, calcula a renda média e a capacidade de financiamento.',
-        html: `<div class="grid g2"><div class="card"><h3>Extrato</h3>
-            <div class="field"><label>Lançamentos (data, descrição e valor por linha)</label><textarea class="inp" id="ex" style="min-height:260px;font-family:Consolas,monospace;font-size:12.5px">${h(exemplo)}</textarea></div>
-            <div class="frow"><div class="field"><label>Taxa de juros (% ao ano)</label><input class="inp" id="tj" type="number" step="0.1" value="9.5"></div><div class="field"><label>Prazo (meses)</label><input class="inp" id="pz" type="number" value="360"></div></div>
+        t: 'Apurador de renda', s: 'Lance o extrato bancário e a leitura automática separa os créditos válidos, calcula a renda média e a capacidade de financiamento.',
+        html: `<div class="grid ap-grid"><div class="card"><h3>Extrato</h3>
+            <div class="ap-lin ap-cab"><span>Data</span><span>Descrição</span><span style="text-align:right">Valor (R$)</span><span></span></div>
+            <div id="lins">${exemplo.map(r => linha(...r)).join('')}</div>
+            <button class="btn mt" id="add">+ Adicionar lançamento</button>
+            <details class="mt"><summary class="muted" style="cursor:pointer">Ou colar extrato em texto</summary>
+              <textarea class="inp mt" id="ex" style="min-height:140px;font-family:Consolas,monospace;font-size:12.5px" placeholder="05/08 PIX RECEBIDO EMPRESA 2.350,00"></textarea>
+              <button class="btn mt" id="ler">Ler texto para as linhas</button></details>
+            <div class="frow mt"><div class="field"><label>Taxa de juros (% ao ano)</label><input class="inp" id="tj" type="number" step="0.1" value="9.5"></div><div class="field"><label>Prazo (meses)</label><input class="inp" id="pz" type="number" value="360"></div></div>
             <button class="btn accent full" id="ap">${ic('spark')} Apurar renda</button></div>
-          <div class="card" id="res"><h3>Resultado</h3><div class="empty">Cole o extrato e clique em Apurar renda.</div></div></div>`,
+          <div class="card" id="res"><h3>Resultado</h3><div class="empty">Confira os lançamentos e clique em Apurar renda.</div></div></div>`,
         after() {
+          const liga = () => document.querySelectorAll('.ap-x').forEach(b => b.onclick = () => b.parentNode.remove());
+          liga();
+          $('#add').onclick = () => { $('#lins').insertAdjacentHTML('beforeend', linha()); liga(); $('#lins').lastElementChild.querySelector('.ap-d').focus(); };
+          $('#ler').onclick = () => {
+            let n = 0;
+            $('#ex').value.split('\n').forEach(l => { const m = l.trim().match(/^(\d{2}\/\d{2}(?:\/\d{2,4})?)\s+(.+?)\s+(-?[\d.]*\d,\d{2})$/); if (m) { $('#lins').insertAdjacentHTML('beforeend', linha(m[1], m[2], m[3])); n++; } });
+            liga(); toast(n ? n + ' lançamentos incluídos' : 'Nada lido. Use: 05/08 DESCRIÇÃO 1.234,56'); if (n) $('#ex').value = '';
+          };
           $('#ap').onclick = () => {
-            const meses = {}, ignorados = [];
-            $('#ex').value.split('\n').forEach(l => {
-              const m = l.trim().match(/^(\d{2})\/(\d{2})(?:\/\d{2,4})?\s+(.+?)\s+(-?[\d.]+,\d{2})$/); if (!m) return;
-              const val = +m[4].replace(/\./g, '').replace(',', '.');
+            const meses = {}, ignorados = []; let erros = 0;
+            document.querySelectorAll('#lins .ap-lin').forEach(l => {
+              const d = l.querySelector('.ap-d').value.trim(), t = l.querySelector('.ap-t').value.trim(), vs = l.querySelector('.ap-v').value.trim();
+              if (!d && !t && !vs) return;
+              const md = d.match(/^(\d{1,2})\/(\d{1,2})/);
+              const val = +vs.replace(/\s|R\$/g, '').replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.');
+              const ok = md && +md[2] >= 1 && +md[2] <= 12 && vs !== '' && isFinite(val);
+              l.classList.toggle('ap-erro', !ok); if (!ok) { erros++; return; }
               if (val <= 0) return;
-              if (/mesma titularidade|estorno|resgate|aplica|empr[eé]stimo/i.test(m[3])) { ignorados.push(m[3] + ' · ' + brl(val)); return; }
-              meses[m[2]] = (meses[m[2]] || 0) + val;
+              if (/mesma titularidade|estorno|resgate|aplica|empr[eé]stimo/i.test(t)) { ignorados.push(t + ' · ' + brl(val)); return; }
+              const k = String(+md[2]).padStart(2, '0'); meses[k] = (meses[k] || 0) + val;
             });
-            const ks = Object.keys(meses).sort(); if (!ks.length) { $('#res').innerHTML = '<h3>Resultado</h3><div class="empty">Não encontrei lançamentos. Use o formato: 05/08 DESCRIÇÃO 1.234,56</div>'; return; }
+            const ks = Object.keys(meses).sort(); if (!ks.length) { $('#res').innerHTML = '<h3>Resultado</h3><div class="empty">Nenhum crédito válido. Confira data (dd/mm) e valor de cada linha.</div>'; return; }
             const media = ks.reduce((s, k) => s + meses[k], 0) / ks.length;
             const parcela = media * .3, i = Math.pow(1 + (+$('#tj').value || 9.5) / 100, 1 / 12) - 1, n = +$('#pz').value || 360;
             const pv = parcela * (1 - Math.pow(1 + i, -n)) / i;
             const nm = ['', 'jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-            $('#res').innerHTML = `<h3>Resultado</h3><div class="grid g2" style="gap:12px">${kpi('Renda média apurada', brl(media), ks.length + ' meses lidos', 'money')}${kpi('Parcela máxima (30%)', brl(parcela), 'regra de comprometimento', 'calc')}</div>
+            $('#res').innerHTML = `<h3>Resultado</h3>${erros ? `<p style="color:var(--bad);font-size:12.5px">${erros} linha(s) em vermelho ficaram de fora: confira data e valor.</p>` : ''}<div class="grid ap-kpis">${kpi('Renda média apurada', brl(media), ks.length + ' meses lidos', 'money')}${kpi('Parcela máxima (30%)', brl(parcela), 'regra de comprometimento', 'calc')}</div>
               <div class="card kpi mt" style="background:var(--accent-soft);border-color:var(--accent)"><div class="lab">${ic('home')}Financiamento possível</div><div class="val">${brl(pv)}</div><div class="foot">${n} meses a ${$('#tj').value}% ao ano, tabela Price</div></div>
               <div class="tbl-wrap mt"><table><thead><tr><th>Mês</th><th class="num">Créditos válidos</th></tr></thead><tbody>${ks.map(k => `<tr><td>${nm[+k]}</td><td class="num">${brl(meses[k])}</td></tr>`).join('')}</tbody></table></div>
               ${ignorados.length ? `<p class="muted" style="font-size:12.5px">Desconsiderados: ${ignorados.map(h).join('; ')}</p>` : ''}
-              <div class="frow mt" style="align-items:end"><div class="field" style="margin:0"><label>Aplicar ao processo</label><select class="inp" id="pr">${DB.processos.map(p => `<option value="${p.id}">#${p.id} · ${h(p.cliente)}</option>`).join('')}</select></div><button class="btn" id="apl">Gravar renda</button></div>`;
+              <div class="ap-apl mt"><div class="field" style="margin:0"><label>Aplicar ao processo</label><select class="inp" id="pr">${DB.processos.map(p => `<option value="${p.id}">#${p.id} · ${h(p.cliente)}</option>`).join('')}</select></div><button class="btn" id="apl">Gravar renda</button></div>`;
             $('#apl').onclick = () => { const p = proc($('#pr').value); p.renda = Math.round(media); p.historico.push({ data: hoje(), txt: 'Renda apurada pelo extrato: ' + brl(media), por: SESS.nome }); save(); toast('Renda gravada no processo #' + p.id); };
           };
         }
