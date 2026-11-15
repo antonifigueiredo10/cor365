@@ -220,7 +220,7 @@ async function telaPedidos() {
     $('#pl').innerHTML = xs.length ? xs.map(x => `<div class="ped">
       <div class="ped-top"><span class="ped-perfil p-${x.perfil}">${(SITE_PERFIS[x.perfil] || {}).nome || x.perfil}</span><small>${new Date(x.criado).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}</small></div>
       <b class="ped-nome">${h(x.nome)}</b>
-      <div class="ped-dados">${h(x.email)} · ${h(x.telefone)}${x.cidade ? ' · ' + h(x.cidade) : ''}${x.empresa ? '<br>' + h(x.empresa) : ''}${x.documento ? ' · ' + (SITE_PERFIS[x.perfil] || {}).doc + ' ' + h(x.documento) : ''}</div>
+      <div class="ped-dados">${h(x.email)} · ${h(x.telefone)}${x.cidade ? ' · ' + h(x.cidade) : ''}${x.empresa ? '<br>' + h(x.empresa) : ''}${x.documento ? ' · ' + (new RegExp('^' + ((SITE_PERFIS[x.perfil] || {}).doc || '-'), 'i').test(x.documento.trim()) ? '' : (SITE_PERFIS[x.perfil] || {}).doc + ' ') + h(x.documento) : ''}</div>
       ${x.mensagem ? `<p class="ped-msg">${h(x.mensagem)}</p>` : ''}
       ${x.status === 'novo' ? `<div class="ped-acts"><button class="btn sm" data-ap="${x.id}">${ic('check')} Aprovar e criar acesso</button><button class="btn ghost sm" data-wa="${x.id}">WhatsApp</button><button class="btn ghost sm" data-rc="${x.id}">Recusar</button></div>` : ''}
     </div>`).join('') : `<div class="empty">Nenhum pedido ${filtro === 'novo' ? 'novo' : filtro}.</div>`;
