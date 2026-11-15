@@ -371,18 +371,20 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stro
   .f1{left:-12px}.f2{right:-12px}
 }
 
-/* celular e tablet: selos embaixo da foto, sem cobrir o rosto */
+/* celular e tablet: selos flutuando nas bordas, longe do rosto */
 @media (max-width:900px){
-  .foto-box{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
-  .foto-anel{flex:0 0 100%}
-  .foto-box .flut{position:static;animation:none;margin:0}
+  .foto-box{margin:28px auto 30px}
+  .foto-box .f2{top:-26px;right:-30px;left:auto;bottom:auto}
+  .foto-box .f1{bottom:-28px;left:-30px;top:auto;right:auto}
 }
 @media (max-width:620px){
-  .foto-box{max-width:340px;gap:8px}
-  .foto-anel{flex:0 0 250px;max-width:250px}
-  .foto-box .f1,.foto-box .f2{padding:8px 12px}
+  .foto-box .f2{top:-22px;right:-34px}
+  .foto-box .f1{bottom:-24px;left:-34px}
 }
-@media (max-width:360px){.foto-anel{flex-basis:210px;max-width:210px}}
+@media (max-width:360px){
+  .foto-box .f2{right:-18px}
+  .foto-box .f1{left:-18px}
+}
 </style>
 </head>
 <body>
