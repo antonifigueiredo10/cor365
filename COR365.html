@@ -7,8 +7,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgNTYiIHdpZHRoPSI1MTIiIGhlaWdodD0iMTEyIj4KICA8cmVjdCB4PSIyIiB5PSI0IiB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHJ4PSIxMyIgZmlsbD0iIzBmMmE0NCIvPgogIDxwYXRoIGQ9Ik0xMiAyOCBMMjYgMTYgTDQwIDI4IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmZmZmYiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CiAgPHBhdGggZD0iTTE1LjUgMzQuNSBhMTAuNSA3IDAgMCAwIDIxIDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2YwN2EyOCIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8dGV4dCB4PSI2MiIgeT0iNDEiIGZvbnQtZmFtaWx5PSJJbnRlciwgU2Vnb2UgVUksIEFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjMyIiBmb250LXdlaWdodD0iODAwIiBsZXR0ZXItc3BhY2luZz0iMC41IiBmaWxsPSIjMGYyYTQ0Ij5JTU9WPHRzcGFuIGZpbGw9IiNmMDdhMjgiPjM2NTwvdHNwYW4+PC90ZXh0Pgo8L3N2Zz4K">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-:root{
+  <style>:root{
   --navy:#0f2a44; --navy2:#1b3d5e; --ink:#13202e; --muted:#5f6f80; --line:#dfe5ec;
   --bg:#f4f6f9; --card:#ffffff; --accent:#f07a28; --accent-soft:#fdeee2;
   --ok:#1f9d63; --ok-soft:#e3f5ec; --warn:#d48a0b; --warn-soft:#fdf3dd;
@@ -315,13 +314,12 @@ td.num,th.num{text-align:right}
 .cor-nums div{padding:8px 4px;text-align:center;border-left:1px solid var(--line)} .cor-nums div:first-child{border-left:0}
 .cor-nums b{display:block;font-size:18px;color:var(--navy)} .cor-nums small{font-size:11px;color:var(--muted)}
 .cor-acts{display:flex;flex-wrap:wrap;gap:6px}
-
 </style>
 </head>
 <body>
   <div id="root"></div>
-  <script>
-/* IMOV365 · base de demonstração (fica só no navegador, chave cor365_db) */
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script>/* IMOV365 · base de demonstração (fica só no navegador, chave cor365_db) */
 const FASES = [
   { k: 'cadastro',     n: 'Cadastro',               sla: 2 },
   { k: 'operacional',  n: 'Análise operacional',    sla: 2 },
@@ -436,10 +434,8 @@ function mkEmp(id, nome, cidade, torres, andares, porAndar, precoBase, d) {
   ['T1-702', 'T2-401', 'T1-303', 'T1-505'].forEach(c => { if (unidades[c] && id === 2) unidades[c] = { status: 'vendido', cliente: '', corretor: '' }; });
   return { id, nome, cidade, torres, andares, porAndar, precoBase, entrega: id === 1 ? 'Dez/2027' : 'Jun/2028', unidades };
 }
-
 </script>
-  <script>
-/* IMOV365 · plataforma do crédito imobiliário (demonstração, sem servidor) */
+  <script>/* IMOV365 · plataforma do crédito imobiliário (demonstração, sem servidor) */
 'use strict';
 
 /* ---------- utilidades ---------- */
@@ -497,23 +493,100 @@ function logo(alt = 34, claro = false) {
     <text x="62" y="41" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="32" font-weight="800" letter-spacing="0.5" fill="${tx}">IMOV<tspan fill="#f07a28">365</tspan></text></svg>`;
 }
 
-/* ---------- base e sessão ---------- */
-let DB, SESS = null;
-function load() {
-  try { const s = localStorage.getItem('cor365_db'); DB = s ? JSON.parse(s) : null; } catch (e) { DB = null; }
-  if (!DB || DB.versao !== 1) { DB = seedDB(); save(); }
-  if (DB.config && /^COR365/.test(DB.config.escritorio || '')) { DB.config.escritorio = DB.config.escritorio.replace(/^COR365/, 'IMOV365'); save(); }
-  try { SESS = JSON.parse(localStorage.getItem('cor365_sessao') || 'null'); } catch (e) { SESS = null; }
+/* ---------- base e sessão: banco Supabase (login de verdade, regras de acesso dentro do banco) ---------- */
+const SB = supabase.createClient('https://afxlcywkhxfcfisnljqt.supabase.co', 'sb_publishable_rtoSmerK4LayE8kCrEaAGg_7Pb99Qvv', { auth: { persistSession: true, storageKey: 'imov365_auth' } });
+const COLS = ['config', 'leads', 'conversas', 'propostas', 'empreendimentos', 'campanhas'];
+const TIPOS_SEQ = ['processo', 'lead', 'conversa', 'imovel', 'proposta', 'campanha'];
+let POOL = {}, SNAP = { p: {}, i: {}, c: {} }, _sync = null, _salvando = Promise.resolve();
+function baseVazia() {
+  return { versao: 1, config: { escritorio: 'IMOV365 Correspondente', cor: '#f07a28' }, usuarios: [], processos: [], oport: [], leads: [], conversas: [], imoveis: [], propostas: [], empreendimentos: [], campanhas: [], seq: criaSeq() };
 }
-function save() { try { localStorage.setItem('cor365_db', JSON.stringify(DB)); } catch (e) { } }
-function setSess(s) { SESS = s; try { s ? localStorage.setItem('cor365_sessao', JSON.stringify(s)) : localStorage.removeItem('cor365_sessao'); } catch (e) { } }
+/* números (processo, lead, imóvel...) vêm reservados do banco, para dois aparelhos nunca gerarem o mesmo */
+function criaSeq() {
+  const o = {};
+  TIPOS_SEQ.forEach(t => Object.defineProperty(o, t, {
+    enumerable: true,
+    get() { const p = POOL[t]; if (!p || p.prox > p.fim) throw new Error('Sem número reservado. Recarregue a página.'); return p.prox - 1; },
+    set(v) { POOL[t].prox = v + 1; if (POOL[t].fim - POOL[t].prox < 2) reserva(t); }
+  }));
+  return o;
+}
+async function reserva(t, n = 3) { const { data, error } = await SB.rpc('reserva_ids', { t, n }); if (!error && data) POOL[t] = { prox: +data, fim: +data + n - 1 }; }
+let DB = baseVazia(), SESS = null;
+const linhaProc = p => { const { id, corretor, liberadoPara, interesses, anon, ...dados } = p; return { id, corretor: corretor || '', liberado_para: liberadoPara || '', dados }; };
+const linhaImv = m => { const { id, corretor, ...dados } = m; return { id, corretor: corretor || '', dados }; };
+function fotografa(lidas) {
+  SNAP = { p: {}, i: {}, c: {} };
+  DB.processos.forEach(p => SNAP.p[p.id] = JSON.stringify(linhaProc(p)));
+  DB.imoveis.forEach(m => SNAP.i[m.id] = JSON.stringify(linhaImv(m)));
+  lidas.forEach(k => SNAP.c[k] = JSON.stringify(DB[k]));
+}
+/* lê do banco só o que este usuário pode ver (o banco filtra pelas regras de acesso) */
+async function carrega() {
+  const { data: { user } } = await SB.auth.getUser();
+  if (!user) throw new Error('sem sessão');
+  const { data: me } = await SB.from('perfis').select('*').eq('id', user.id).maybeSingle();
+  if (!me || !me.ativo) throw new Error('desativado');
+  const rs = await Promise.all([
+    SB.from('processos').select('*').order('id'), SB.from('interesses').select('*').order('id'),
+    SB.from('imoveis').select('*').order('id'), SB.from('colecoes').select('chave,dados'), SB.from('perfis').select('*').order('nome')]);
+  rs.forEach(r => { if (r.error) throw r.error; });
+  const [pr, it, im, co, pf] = rs.map(r => r.data);
+  const ints = {}; it.forEach(r => (ints[r.processo_id] = ints[r.processo_id] || []).push({ ...r.dados, corretor: r.corretor, _sid: r.id }));
+  const n = baseVazia();
+  n.processos = pr.map(r => ({ ...r.dados, id: +r.id, corretor: r.corretor, liberadoPara: r.liberado_para, interesses: ints[r.id] || [] }));
+  n.imoveis = im.map(r => ({ ...r.dados, id: +r.id, corretor: r.corretor }));
+  co.forEach(r => { n[r.chave] = r.dados; });
+  n.usuarios = pf.filter(u => !u.admin && u.perfil).map(u => ({ email: u.email, nome: u.nome, perfil: u.perfil, telefone: u.telefone, creci: u.creci, imobiliaria: u.imobiliaria, ativo: u.ativo, criado: u.criado }));
+  if (me.perfil === 'imob' && !me.admin) {
+    /* mapa do corretor: dos clientes que não são dele chegam só local, valores e situação */
+    const { data, error } = await SB.rpc('oportunidades'); if (error) throw error;
+    const vistos = new Set(n.processos.map(p => p.id));
+    n.oport = data.filter(r => !vistos.has(+r.id)).map(r => ({ id: +r.id, cidade: r.cidade || undefined, bairro: r.bairro || undefined, valorImovel: +r.valor_imovel || 0, financiamento: +r.financiamento || 0,
+      fase: +r.fase || 0, modalidade: r.modalidade || '', criado: r.criado || hoje(), entrouFase: r.entrou_fase || hoje(), cliente: '', telefone: '', banco: '', corretor: '', liberadoPara: '', docs: {}, historico: [], anon: true, interesses: ints[r.id] || [] }));
+  }
+  DB = n; fotografa(co.map(r => r.chave));
+  let pfSalvo = null; try { pfSalvo = localStorage.getItem('imov365_perfil'); } catch (e) { }
+  SESS = { id: me.id, email: me.email, nome: me.nome, admin: !!me.admin, perfil: me.admin ? (PERFIS[pfSalvo] ? pfSalvo : null) : me.perfil };
+  if (!Object.keys(POOL).length) await Promise.all(TIPOS_SEQ.map(t => reserva(t)));
+}
+/* grava no banco só o que mudou (processos, imóveis, listas e as ofertas novas dos corretores) */
+function save() { if (!SESS) return; clearTimeout(_sync); _sync = setTimeout(salvaAgora, 300); }
+function salvaAgora() { clearTimeout(_sync); _sync = null; return (_salvando = _salvando.then(sincroniza).catch(e => toast('Erro ao salvar: ' + e.message))); }
+async function sincroniza() {
+  const erros = [], tarefas = [];
+  const roda = (q, ok) => tarefas.push(Promise.resolve(q).then(({ data, error }) => { if (error) erros.push(error.message); else if (ok) ok(data); }));
+  const vivosP = new Set(), vivosI = new Set();
+  DB.processos.forEach(p => { vivosP.add(String(p.id)); const r = linhaProc(p), t = JSON.stringify(r); if (SNAP.p[p.id] !== t) roda(SB.from('processos').upsert({ ...r, atualizado: new Date().toISOString() }), () => SNAP.p[p.id] = t); });
+  Object.keys(SNAP.p).forEach(id => { if (!vivosP.has(id)) roda(SB.from('processos').delete().eq('id', +id), () => delete SNAP.p[id]); });
+  DB.imoveis.forEach(m => { vivosI.add(String(m.id)); const r = linhaImv(m), t = JSON.stringify(r); if (SNAP.i[m.id] !== t) roda(SB.from('imoveis').upsert(r), () => SNAP.i[m.id] = t); });
+  Object.keys(SNAP.i).forEach(id => { if (!vivosI.has(id)) roda(SB.from('imoveis').delete().eq('id', +id), () => delete SNAP.i[id]); });
+  Object.keys(SNAP.c).forEach(k => { const t = JSON.stringify(DB[k]); if (SNAP.c[k] !== t) roda(SB.from('colecoes').update({ dados: DB[k] }).eq('chave', k), () => SNAP.c[k] = t); });
+  await Promise.all(tarefas);
+  for (const p of DB.processos.concat(DB.oport)) for (const i of p.interesses || []) if (!i._sid) {
+    const { _sid, corretor, ...dados } = i;
+    const { data, error } = await SB.from('interesses').insert({ processo_id: p.id, corretor, dados }).select('id').single();
+    if (error) erros.push(error.message); else i._sid = data.id;
+  }
+  if (erros.length) {
+    toast('O servidor não aceitou a alteração: ' + erros[0]);
+    try { await carrega(); if (!$('.modal-bg')) route(); } catch (e) { }
+  }
+}
+/* volta para a aba: busca o que os outros mudaram (ofertas novas, liberações) */
+document.addEventListener('visibilitychange', async () => {
+  if (document.hidden || !SESS || _sync || $('.modal-bg')) return;
+  await _salvando; try { await carrega(); if (!$('.modal-bg')) route(); } catch (e) { }
+});
+function setSess(s) { SESS = s; try { s && s.admin && s.perfil ? localStorage.setItem('imov365_perfil', s.perfil) : localStorage.removeItem('imov365_perfil'); } catch (e) { } }
+async function sair() { try { await salvaAgora(); await SB.auth.signOut(); } catch (e) { } setSess(null); DB = baseVazia(); POOL = {}; SNAP = { p: {}, i: {}, c: {} }; if (location.hash.replace(/^#\/?/, '')) go(''); else route(); }
 function aplicaMarca() { document.documentElement.style.setProperty('--accent', DB.config.cor || '#f07a28'); }
 
 /* ---------- regras ---------- */
 const prazo = p => addDias(p.entrouFase, FASES[p.fase].sla);
 const atrasado = p => hoje() > prazo(p);
 const pendencias = p => DOCS_PADRAO.filter(d => !p.docs[d]);
-const proc = id => DB.processos.find(p => p.id === +id);
+const proc = id => DB.processos.find(p => p.id === +id) || (DB.oport || []).find(p => p.id === +id);
 function moverFase(p, nova, nota) {
   if (nova < 0 || nova >= FASES.length || nova === p.fase) return;
   const de = FASES[p.fase].n;
@@ -599,12 +672,8 @@ function route() {
   telaEntrada();
 }
 
-/* ---------- admin do HUB (senha guardada só como hash SHA-256 de e-mail + senha) ---------- */
-const ADMIN = { email: 'admin@imov365.com.br', nome: 'Administrador', hash: '95921b2e5a43f1aa03a74523b031fd397bfd1345f805413ae3183a132829669f' };
-async function sha256(t) {
-  const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t));
-  return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
-}
+/* ---------- o administrador é o usuário com admin = true na tabela perfis ---------- */
+const ADMIN = { email: 'admin@imov365.com.br' };
 window.addEventListener('hashchange', route);
 
 /* ---------- escolha de perfil e login ---------- */
@@ -637,18 +706,13 @@ function telaEntrada() {
   $('#fl').onsubmit = async e => {
     e.preventDefault();
     const f = new FormData(e.target), em = String(f.get('email')).trim().toLowerCase(), se = String(f.get('senha'));
-    if (em === ADMIN.email) {
-      let ok = false;
-      try { ok = (await sha256(em + '|' + se)) === ADMIN.hash; } catch (x) { }
-      if (!ok) { $('#err').textContent = 'E-mail ou senha inválidos.'; return; }
-      setSess({ email: ADMIN.email, nome: ADMIN.nome, admin: true, perfil: null });
-      return go('hub');
-    }
-    const u = DB.usuarios.find(x => x.email === em && x.senha === se);
-    if (!u) { $('#err').textContent = 'E-mail ou senha inválidos.'; return; }
-    if (u.ativo === false) { $('#err').textContent = 'Seu acesso está desativado. Fale com o administrador.'; return; }
-    setSess({ email: u.email, nome: u.nome, perfil: u.perfil });
-    go('app/painel');
+    const bt = $('#fl button'), err = $('#err'); bt.disabled = true; err.textContent = '';
+    const desat = 'Seu acesso está desativado. Fale com o administrador.';
+    const { error } = await SB.auth.signInWithPassword({ email: em, password: se });
+    if (error) { bt.disabled = false; err.textContent = /banned/i.test(error.message) ? desat : /invalid/i.test(error.message) ? 'E-mail ou senha inválidos.' : 'Não foi possível entrar: ' + error.message; return; }
+    try { localStorage.removeItem('imov365_perfil'); } catch (x) { }
+    try { await carrega(); } catch (x) { await SB.auth.signOut(); SESS = null; bt.disabled = false; err.textContent = x.message === 'desativado' ? desat : 'Não foi possível carregar seus dados: ' + x.message; return; }
+    aplicaMarca(); go(SESS.admin ? 'hub' : 'app/painel');
   };
 }
 function telaHub() {
@@ -658,7 +722,7 @@ function telaHub() {
     ${Object.entries(PERFIS).map(([k, p]) => `<button class="perfil" data-p="${k}"><span class="ico">${ic(p.ico)}</span><span><b>${p.nome}</b><small>${p.sub}</small></span><span class="chev">${ic('chev')}</span></button>`).join('')}
     <div class="gate-links"><span class="muted" style="font-size:13px">${h(SESS.email)}</span><a href="#" id="sair">${ic('logout')} Sair</a></div></div></div>`;
   $$('.perfil', app).forEach(b => b.onclick = () => { setSess({ ...SESS, perfil: b.dataset.p }); go('app/painel'); });
-  $('#sair').onclick = e => { e.preventDefault(); setSess(null); go(''); };
+  $('#sair').onclick = e => { e.preventDefault(); sair(); };
 }
 
 /* ---------- casca do app ---------- */
@@ -682,7 +746,7 @@ function telaApp(view, arg) {
     <div class="main"><header class="top"><button class="menu-btn" id="mb" aria-label="Menu">${ic('menu')}</button>
       <div><h1>${h(r.t || '')}</h1>${r.s ? `<div class="sub">${r.s}</div>` : ''}</div><div class="actions" id="acts">${r.a || ''}</div></header>
       <section class="view" id="view">${r.html || ''}</section></div></div>`;
-  $('#sair').onclick = () => { setSess(null); go(''); };
+  $('#sair').onclick = () => sair();
   if ($('#hub')) $('#hub').onclick = () => { setSess({ ...SESS, perfil: null }); go('hub'); };
   $('#mb').onclick = () => $('#side').classList.toggle('open');
   $$('#side nav a').forEach(a => a.addEventListener('click', () => $('#side').classList.remove('open')));
@@ -789,7 +853,7 @@ function corretoresConhecidos() {
 }
 function telaMapa(anonimo) {
   const eu = SESS.nome;
-  const ps = DB.processos.map(p => ({ p, ...localDe(p), st: statusOp(p) }));
+  const ps = DB.processos.concat(DB.oport || []).map(p => ({ p, ...localDe(p), st: statusOp(p) }));
   const cidades = [...new Set(ps.map(x => x.cidade))].sort();
   const sts = ['Em análise', 'Aprovado', 'Contratado'];
   const cls = st => st === 'Em análise' ? 'an' : st === 'Aprovado' ? 'ap' : 'ct';
@@ -1177,12 +1241,11 @@ const VIEWS = {
             <div class="field"><label>Cor de destaque</label><input class="inp" id="cc" type="color" value="${h(DB.config.cor)}" style="height:44px;padding:4px"></div>
             <button class="btn" id="sv">Salvar</button></div>
           <div class="card"><h3>Equipe</h3><div class="tbl-wrap" style="border:0"><table><tbody>${RESPONSAVEIS.map(r => { const n = DB.processos.filter(p => p.responsavel === r); return `<tr><td><b>${r}</b><br><span class="muted" style="font-size:12px">Analista de crédito</span></td><td class="num">${n.length} processos<br><span class="${n.filter(atrasado).length ? 'tag bad' : 'tag ok'}">${n.filter(atrasado).length} atrasado(s)</span></td></tr>`; }).join('')}</tbody></table></div></div></div>
-          <div class="card mt"><h3>Acessos da demonstração</h3><div class="tbl-wrap" style="border:0"><table><thead><tr><th>Perfil</th><th>Nome</th><th>E-mail</th><th>Senha</th></tr></thead><tbody>${DB.usuarios.map(u => `<tr><td>${PERFIS[u.perfil].nome}</td><td>${h(u.nome)}</td><td>${h(u.email)}</td><td>${SESS.admin ? h(u.senha) : "••••••"}</td></tr>`).join('')}</tbody></table></div>
-            <p class="muted" style="font-size:13px">Tudo fica gravado só neste navegador. Para começar de novo:</p><button class="btn danger" id="rs">Restaurar dados de demonstração</button></div>`,
+          <div class="card mt"><h3>Usuários com acesso</h3><div class="tbl-wrap" style="border:0"><table><thead><tr><th>Perfil</th><th>Nome</th><th>E-mail</th></tr></thead><tbody>${DB.usuarios.map(u => `<tr><td>${PERFIS[u.perfil].nome}</td><td>${h(u.nome)}</td><td>${h(u.email)}</td></tr>`).join('')}</tbody></table></div>
+            <p class="muted" style="font-size:13px">Os dados ficam no banco do IMOV365 e aparecem em qualquer aparelho. Corretor novo: menu Corretores, no perfil Imobiliária (só o administrador).</p></div>`,
         after() {
           $('#cc').oninput = e => document.documentElement.style.setProperty('--accent', e.target.value);
           $('#sv').onclick = () => { DB.config.escritorio = $('#ce').value.trim() || 'IMOV365'; DB.config.whatsapp = $('#cw').value.trim(); DB.config.cor = $('#cc').value; save(); aplicaMarca(); toast('Configurações salvas'); };
-          $('#rs').onclick = () => { if (confirm('Apagar tudo e voltar aos dados de demonstração?')) { DB = seedDB(); save(); aplicaMarca(); toast('Dados restaurados'); rerender(); } };
         }
       };
     }
@@ -1228,6 +1291,7 @@ const VIEWS = {
             vals.email = vals.email.toLowerCase();
             if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(vals.email)) { toast('E-mail inválido'); return false; }
             if (vals.email === ADMIN.email || DB.usuarios.some(x => x.email === vals.email && x !== atual)) { toast('Já existe um acesso com esse e-mail'); return false; }
+            for (const k of ['telefone', 'creci', 'imobiliaria']) vals[k] = vals[k] || '';
             if (vals.senha !== undefined && vals.senha.length < 6) { toast('A senha precisa de pelo menos 6 caracteres'); return false; }
             return true;
           };
@@ -1237,12 +1301,20 @@ const VIEWS = {
             DB.processos.forEach(p => { if (p.corretor === de) p.corretor = para; if (p.liberadoPara === de) p.liberadoPara = para; (p.interesses || []).forEach(i => { if (i.corretor === de) i.corretor = para; }); });
             DB.imoveis.forEach(m => { if (m.corretor === de) m.corretor = para; });
           };
+          /* quem cria e muda acesso é a função admin-usuarios no servidor (confere se quem pede é o admin) */
+          const chama = async (body, ok) => {
+            await salvaAgora();
+            const { error } = await SB.functions.invoke('admin-usuarios', { body });
+            let msg = error && error.message;
+            if (error && error.context && error.context.json) { try { msg = (await error.context.json()).erro || msg; } catch (x) { } }
+            if (msg) { toast(msg); return; }
+            toast(ok); try { await carrega(); } catch (x) { } rerender();
+          };
           const novo = (pre = {}) => formModal(pre.nome ? 'Criar acesso para ' + pre.nome : 'Novo corretor', campos(pre, true), vals => {
             if (!valida(vals)) return false;
             if (!pre.nome && DB.usuarios.some(x => x.perfil === 'imob' && x.nome === vals.nome)) { toast('Já existe um corretor com esse nome'); return false; }
-            if (pre.nome) renomeia(pre.nome, vals.nome);
-            DB.usuarios.push({ ...vals, perfil: 'imob', ativo: true, criado: hoje() }); save();
-            toast('Corretor cadastrado. Entrada: ' + vals.email); rerender();
+            if (pre.nome && pre.nome !== vals.nome) { renomeia(pre.nome, vals.nome); save(); }
+            chama({ acao: 'criar', perfil: 'imob', ...vals }, 'Corretor cadastrado. Entrada: ' + vals.email);
           });
           $('#nc').onclick = () => novo();
           const acha = em => DB.usuarios.find(x => x.email === em);
@@ -1250,15 +1322,15 @@ const VIEWS = {
           $$('[data-ed]', v).forEach(b => b.onclick = () => { const u = acha(b.dataset.ed); formModal('Editar ' + u.nome, campos(u), vals => {
             if (!valida(vals, u)) return false;
             if (vals.nome !== u.nome && DB.usuarios.some(x => x !== u && x.perfil === 'imob' && x.nome === vals.nome)) { toast('Já existe um corretor com esse nome'); return false; }
-            renomeia(u.nome, vals.nome); Object.assign(u, vals); save(); toast('Dados salvos'); rerender();
+            chama({ acao: 'editar', email: u.email, novoEmail: vals.email, nome: vals.nome, telefone: vals.telefone, creci: vals.creci, imobiliaria: vals.imobiliaria }, 'Dados salvos');
           }); });
           $$('[data-sn]', v).forEach(b => b.onclick = () => { const u = acha(b.dataset.sn); formModal('Nova senha para ' + u.nome, [{ k: 'senha', l: 'Nova senha (passe para o corretor)', req: true, v: senhaSug() }], vals => {
             if (vals.senha.length < 6) { toast('A senha precisa de pelo menos 6 caracteres'); return false; }
-            u.senha = vals.senha; save(); toast('Senha trocada');
+            chama({ acao: 'senha', email: u.email, senha: vals.senha }, 'Senha trocada. Passe a nova senha para ' + u.nome);
           }); });
           $$('[data-at]', v).forEach(b => b.onclick = () => { const u = acha(b.dataset.at); const des = u.ativo !== false;
             if (des && !confirm('Desativar o acesso de ' + u.nome + '? Ele não consegue mais entrar; os dados dele continuam.')) return;
-            u.ativo = !des; save(); toast(des ? 'Acesso desativado' : 'Acesso reativado'); rerender(); });
+            chama({ acao: 'ativo', email: u.email, ativo: !des }, des ? 'Acesso desativado' : 'Acesso reativado'); });
         }
       };
     },
@@ -1428,8 +1500,13 @@ function enviarCliente() {
 function parcelaEstimada(pv, taxa = 9.5, n = 360) { const i = Math.pow(1 + taxa / 100, 1 / 12) - 1; return pv * i / (1 - Math.pow(1 + i, -n)); }
 
 /* ---------- início ---------- */
-load(); aplicaMarca(); route();
-
+async function inicia() {
+  app.innerHTML = `<div class="gate dots"><div class="gate-box entrada"><div class="logo-grande">${logo(84)}</div><p class="muted" style="text-align:center">Carregando...</p></div></div>`;
+  try { const { data } = await SB.auth.getSession(); if (data.session) await carrega(); }
+  catch (e) { try { await SB.auth.signOut(); } catch (x) { } SESS = null; }
+  aplicaMarca(); route();
+}
+inicia();
 </script>
 </body>
 </html>
