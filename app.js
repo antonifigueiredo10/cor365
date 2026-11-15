@@ -229,10 +229,12 @@ function route() {
   closeModal();
   const p = location.hash.replace(/^#\/?/, '').split('/');
   if (p[0] === 'app') { if (!SESS || !SESS.perfil) return go(SESS ? 'hub' : ''); return telaApp(p[1] || 'painel', p[2]); }
-  if (p[0] === 'hub') { if (!SESS) return go(''); if (!SESS.admin) return go('app/painel'); return telaHub(); }
-  if (SESS) return go(SESS.admin ? 'hub' : 'app/painel');
+  if (p[0] === 'hub') { if (!SESS) return go('entrar'); if (!SESS.admin) return go('app/painel'); return p[1] === 'pedidos' ? telaPedidos() : telaHub(); }
+  if (p[0] === 'cadastro') return telaCadastro(p[1]);
+  if (p[0] === 'entrar' && SESS) return go(SESS.admin ? 'hub' : 'app/painel');
+  if (p[0] === 'entrar') return telaEntrada(p[1]);
   if (p[0]) return go('');
-  telaEntrada();
+  telaSite();
 }
 
 /* ---------- o administrador é o usuário com admin = true na tabela perfis ---------- */
@@ -251,18 +253,21 @@ function ligaWhats(el) {
     window.open('https://wa.me/' + n + '?text=' + encodeURIComponent(a.dataset.wa === 'comercial' ? 'Olá! Quero conhecer o IMOV365.' : 'Olá! Preciso de suporte no IMOV365.'), '_blank', 'noopener');
   });
 }
-function telaEntrada() {
+function telaEntrada(perfil) {
   document.title = 'Entrar | IMOV365';
+  const sp = (typeof SITE_PERFIS !== 'undefined' && SITE_PERFIS[perfil]) || null;
   app.innerHTML = `<div class="gate dots"><div class="gate-box entrada">
+    <a href="#/" class="s-voltar">${ic('back')} Voltar ao site</a>
     <div class="logo-grande">${logo(84)}</div>
-    <div class="kicker" style="text-align:center">Plataforma do crédito imobiliário</div>
+    <div class="kicker" style="text-align:center">${sp ? 'Entrar como ' + sp.nome.toLowerCase() : 'Plataforma do crédito imobiliário'}</div>
     <form id="fl" autocomplete="on">
       <div class="field"><label>E-mail <span class="req">*</span></label><input class="inp" name="email" type="email" autocomplete="username" required></div>
       <div class="field"><label>Senha <span class="req">*</span></label><input class="inp" name="senha" type="password" autocomplete="current-password" required></div>
       <div class="erro" id="err"></div>
       <a href="#" id="esq" style="font-size:13px">Esqueci minha senha</a>
       <button class="btn full" style="margin-top:16px">Entrar</button>
-    </form>${linksRodape()}</div></div>`;
+    </form>
+    <p class="s-form-ja" style="text-align:center">Ainda não tem acesso? <a href="#/cadastro/${sp ? perfil : 'imob'}">Cadastre-se</a></p>${linksRodape()}</div></div>`;
   $('#esq').onclick = e => { e.preventDefault(); toast('Fale com o administrador para trocar a senha'); };
   $('[name=email]').focus();
   ligaWhats(app);
@@ -283,8 +288,11 @@ function telaHub() {
   app.innerHTML = `<div class="gate dots"><div class="gate-box">
     ${logo(46)}<div class="kicker">HUB · escolha o sistema</div><h1>Olá, ${h(SESS.nome.split(' ')[0])}</h1>
     ${Object.entries(PERFIS).map(([k, p]) => `<button class="perfil" data-p="${k}"><span class="ico">${ic(p.ico)}</span><span><b>${p.nome}</b><small>${p.sub}</small></span><span class="chev">${ic('chev')}</span></button>`).join('')}
+    <button class="perfil perfil-ped" id="ped"><span class="ico">${ic('send')}</span><span><b>Pedidos de cadastro</b><small>Quem pediu acesso pelo site</small></span><span class="ped-n" id="pedn"></span><span class="chev">${ic('chev')}</span></button>
     <div class="gate-links"><span class="muted" style="font-size:13px">${h(SESS.email)}</span><a href="#" id="sair">${ic('logout')} Sair</a></div></div></div>`;
-  $$('.perfil', app).forEach(b => b.onclick = () => { setSess({ ...SESS, perfil: b.dataset.p }); go('app/painel'); });
+  $$('.perfil[data-p]', app).forEach(b => b.onclick = () => { setSess({ ...SESS, perfil: b.dataset.p }); go('app/painel'); });
+  $('#ped').onclick = () => go('hub/pedidos');
+  contaPedidos().then(n => { const el = $('#pedn'); if (el && n) el.textContent = n; }).catch(() => { });
   $('#sair').onclick = e => { e.preventDefault(); sair(); };
 }
 
