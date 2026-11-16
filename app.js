@@ -239,7 +239,7 @@ function route() {
   telaSite();
 }
 /* enquanto o domínio da Patricia não fica pronto, imov365.com.br abre o site dela; para voltar, deixe '' */
-const PAGINA_RAIZ = '/patricia/';
+const PAGINA_RAIZ = '';
 
 /* ---------- o administrador é o usuário com admin = true na tabela perfis ---------- */
 const ADMIN = { email: 'admin@imov365.com.br' };
